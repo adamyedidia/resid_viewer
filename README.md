@@ -31,3 +31,5 @@ to update your local database.
 Also, you'll need to install alembic:
 
 `pip install alembic`
+
+Finally, create an empty file called `local_settings.py` in this directory.
