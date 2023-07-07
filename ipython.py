@@ -6,7 +6,7 @@ def main():
     sess = SessionLocal()
 
     # add objects that you want to use in the shell to this dictionary
-    user_ns = {"session": sess, "Vector": Vector}
+    user_ns = {"sess": sess, "Vector": Vector}
 
     print("Starting IPython shell with session and Vector imported.")
     embed(user_ns=user_ns)
