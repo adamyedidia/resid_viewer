@@ -16,7 +16,7 @@ Create a database and a corresponding user. From the terminal, run,
 
 From within the PSQL shell that you just opened, run:
 
-CREATE ROLE rv WITH LOGIN PASSWORD 'resids' CREATEDB CREATEROLE;
+`CREATE ROLE rv WITH LOGIN PASSWORD 'resids' CREATEDB CREATEROLE;`
 
 Do CTRL-D to leave the shell.
 
