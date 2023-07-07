@@ -4,9 +4,11 @@ To install requirements, run
 
 `pip install -r requirements.txt`
 
-Then install postgres:
+Then install and start postgres:
 
 `brew install postgresql`
+
+`brew services start postgresql`
 
 Create a database and a corresponding user. From the terminal, run,
 
