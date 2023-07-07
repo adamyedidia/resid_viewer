@@ -4,6 +4,7 @@ from resid import Resid
 from model import Model
 from user import User
 from direction import Direction
+from direction_description import DirectionDescription
 
 def main():
     sess = SessionLocal()
@@ -15,6 +16,7 @@ def main():
         "Model": Model,
         "User": User,
         "Direction": Direction,
+        "DirectionDescription": DirectionDescription,
     }
 
     embed(user_ns=user_ns)

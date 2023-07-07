@@ -20,12 +20,14 @@ class Direction(Base):
     type = Column(String)
 
     generated_by_process = Column(String)
+    component_index = Column(Integer)
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
     __table_args__ = (
         Index("idx_directions_model_layer_type_created_at", "model_id", "layer", "type", "created_at"),
         Index("idx_generated_by_process_created_at", "generated_by_process", "created_at"),
+        Index("idx_component_index_created_at", "component_index", "created_at"),
     )
 
     @property
