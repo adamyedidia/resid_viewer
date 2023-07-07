@@ -18,7 +18,7 @@ class Resid(Base):
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
     __table_args__ = (
-        Index("idx_resids_model_layer_type_time", "model_id", "layer", "type", "created_at"),
+        Index("idx_resids_model_layer_type_created_at", "model_id", "layer", "type", "created_at"),
     )
 
     @property
