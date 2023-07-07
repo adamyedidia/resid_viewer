@@ -1,0 +1,5 @@
+flask==2.3.2
+ipython==8.6.0
+numpy==1.24.3
+psycopg2-binary==2.9.6
+sqlalchemy==2.0.18
