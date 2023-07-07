@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Index, Integer, ARRAY, Float, String
+from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, func
 from sqlalchemy.orm import relationship
 from database import Base
 import numpy as np
@@ -15,8 +15,10 @@ class Resid(Base):
     layer = Column(Integer, nullable=False)
     type = Column(String, nullable=False)
 
+    created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
+
     __table_args__ = (
-        Index("idx_resids_model_layer_type", "model_id", "layer", "type"),
+        Index("idx_resids_model_layer_type_time", "model_id", "layer", "type", "created_at"),
     )
 
     @property
