@@ -14,11 +14,13 @@ class Resid(Base):
 
     layer = Column(Integer, nullable=False)
     type = Column(String, nullable=False)
+    prompt_id = Column(Integer, ForeignKey("prompts.id"), nullable=False, index=True)
+    prompt = relationship("Prompt", lazy="joined")
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
     __table_args__ = (
-        Index("idx_resids_model_layer_type_created_at", "model_id", "layer", "type", "created_at"),
+        Index("idx_resids_model_prompt_layer_type_created_at", "model_id", "prompt_id", "layer", "type", "created_at"),
     )
 
     @property
@@ -35,4 +37,5 @@ class Resid(Base):
             'model': self.model.name,
             'layer': self.layer,
             'type': self.type,
+            'prompt': self.prompt.text,
         }
