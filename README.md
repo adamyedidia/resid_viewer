@@ -32,4 +32,8 @@ Also, you'll need to install alembic:
 
 `pip install alembic`
 
+You'll also need to install TransformerLens:
+
+`pip install git+https://github.com/neelnanda-io/TransformerLens`
+
 Finally, create an empty file called `local_settings.py` in this directory.
