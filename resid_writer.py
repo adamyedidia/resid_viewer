@@ -381,6 +381,7 @@ def main():
                             key,
                             j,
                             i,
+                            no_commit=True,
                         )
 
             if shape[1] == 31:
@@ -399,6 +400,7 @@ def main():
                                 key,
                                 j,
                                 i,
+                                no_commit=True,
                             )                    
 
                 else:
@@ -416,7 +418,10 @@ def main():
                             key,
                             i,
                             None,
+                            no_commit=True,
                         )
+
+            sess.commit()
 
 
 

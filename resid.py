@@ -72,7 +72,8 @@ def add_resid(sess,
               layer: Optional[int], 
               type: str,
               token_position: int,
-              head: Optional[int] = None) -> None:
+              head: Optional[int] = None,
+              no_commit: bool = False) -> None:
     
     assert len(arr.shape) == 1, "Resid must be 1-dimensional"
 
@@ -101,4 +102,5 @@ def add_resid(sess,
     )
 
     sess.add(resid)
-    sess.commit()
+    if not no_commit:
+        sess.commit()
