@@ -358,7 +358,6 @@ def main():
         _, cache = reference_gpt2.run_with_cache(tokens)
 
         for key in cache.keys():
-            print(key)
             value = cache[key]
             shape = value.shape
             assert shape[0] == 1
