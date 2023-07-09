@@ -5,3 +5,4 @@ numpy==1.24.3
 psycopg2-binary==2.9.6
 sqlalchemy==2.0.18
 tiktoken==0.4.0
+torch==2.0.1
