@@ -5,6 +5,8 @@ from model import Model
 from user import User
 from direction import Direction
 from direction_description import DirectionDescription
+from prompt import Prompt
+from sqlalchemy import func
 
 def main():
     sess = SessionLocal()
@@ -17,6 +19,8 @@ def main():
         "User": User,
         "Direction": Direction,
         "DirectionDescription": DirectionDescription,
+        "Prompt": Prompt,
+        "func": func,
     }
 
     embed(user_ns=user_ns)

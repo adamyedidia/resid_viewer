@@ -21,34 +21,30 @@ def write_openwebtext10k_prompts() -> None:
     counter = 0
 
     prompt_length = 30
-    for i in range(len(ds)):  # type: ignore
+    for i in range(1000):  # type: ignore
         print(f'Writing prompt {i} of {len(ds)} of length {prompt_length}')  # type: ignore
 
         item = ds[i]  # type: ignore
         text: str = item['text']  # type: ignore
         encoded_text = enc.encode(text)
-        subprompts = split_prompt_by_tokens(encoded_text, prompt_length)
-        for subprompt in subprompts:
-            # deterministically subsample 10% of the prompts
-            counter += 1
-            if counter % 10 != 0:
-                continue
+        # subprompts = split_prompt_by_tokens(encoded_text, prompt_length)
 
-            subprompt_singletext = enc.decode(subprompt)
-            subprompt_decoded_by_token = [enc.decode([token]) for token in subprompt]
+        truncated_encoded_text = encoded_text[:prompt_length]
+        subprompt_singletext = enc.decode(truncated_encoded_text)
+        subprompt_decoded_by_token = [enc.decode([token]) for token in encoded_text]
 
-            if (existing_prompt := sess.query(Prompt).filter(Prompt.text == subprompt_singletext).first()) is not None:
-                # print(f'Prompt already exists: {existing_prompt}')
-                continue
+        if (existing_prompt := sess.query(Prompt).filter(Prompt.text == subprompt_singletext).first()) is not None:
+            # print(f'Prompt already exists: {existing_prompt}')
+            continue
 
-            sess.add(Prompt(
-                text=subprompt_singletext,
-                encoded_text_split_by_token=subprompt,
-                text_split_by_token=subprompt_decoded_by_token,
-                length_in_tokens=len(subprompt),
-                dataset=dataset_short_name,
-            ))
-            sess.commit()
+        sess.add(Prompt(
+            text=subprompt_singletext,
+            encoded_text_split_by_token=truncated_encoded_text,
+            text_split_by_token=subprompt_decoded_by_token,
+            length_in_tokens=len(truncated_encoded_text),
+            dataset=dataset_short_name,
+        ))
+        sess.commit()
 
 
 if __name__ == '__main__':
