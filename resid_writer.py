@@ -351,45 +351,28 @@ def main():
 
     for i, prompt in enumerate(prompts_to_populate):
         print(f'Writing resids for {prompt}, {i}')
+        
+        try:
 
-        text = prompt.text
-        tokens = reference_gpt2.to_tokens(text)  # type: ignore
-        tokens = cuda(tokens)
-        _, cache = reference_gpt2.run_with_cache(tokens)
+            text = prompt.text
+            tokens = reference_gpt2.to_tokens(text)  # type: ignore
+            tokens = cuda(tokens)
+            _, cache = reference_gpt2.run_with_cache(tokens)
 
-        for key in cache.keys():
-            value = cache[key]
-            shape = value.shape
-            assert shape[0] == 1
-            
-            layer_num = get_layer_num_from_resid_type(key)
+            for key in cache.keys():
+                value = cache[key]
+                shape = value.shape
+                assert shape[0] == 1
+                
+                layer_num = get_layer_num_from_resid_type(key)
 
-            if shape[1] == 12:
-                assert len(shape) == 4
-                assert shape[2] == 31
+                if shape[1] == 12:
+                    assert len(shape) == 4
+                    assert shape[2] == 31
 
-                for i in range(12):
-                    for j in range(31):
-                        resid = value[0, i, j, :].detach().numpy()
-
-                        add_resid(
-                            sess,
-                            resid,
-                            model,
-                            prompt,
-                            layer_num,
-                            key,
-                            j,
-                            i,
-                            no_commit=True,
-                        )
-
-            if shape[1] == 31:
-                if shape[2] == 12:
-                    assert len(shape) == 4, shape
                     for i in range(12):
                         for j in range(31):
-                            resid = value[0, j, i, :].detach().numpy()
+                            resid = value[0, i, j, :].detach().numpy()
 
                             add_resid(
                                 sess,
@@ -401,28 +384,51 @@ def main():
                                 j,
                                 i,
                                 no_commit=True,
-                            )                    
+                            )
 
-                else:
-                    assert len(shape) == 3, shape
+                if shape[1] == 31:
+                    if shape[2] == 12:
+                        assert len(shape) == 4, shape
+                        for i in range(12):
+                            for j in range(31):
+                                resid = value[0, j, i, :].detach().numpy()
 
-                    for i in range(31):
-                        resid = value[0, i, :].detach().numpy()
+                                add_resid(
+                                    sess,
+                                    resid,
+                                    model,
+                                    prompt,
+                                    layer_num,
+                                    key,
+                                    j,
+                                    i,
+                                    no_commit=True,
+                                )                    
 
-                        add_resid(
-                            sess,
-                            resid,
-                            model,
-                            prompt,
-                            layer_num,
-                            key,
-                            i,
-                            None,
-                            no_commit=True,
-                        )
+                    else:
+                        assert len(shape) == 3, shape
 
-            sess.commit()
+                        for i in range(31):
+                            resid = value[0, i, :].detach().numpy()
 
+                            add_resid(
+                                sess,
+                                resid,
+                                model,
+                                prompt,
+                                layer_num,
+                                key,
+                                i,
+                                None,
+                                no_commit=True,
+                            )
+
+                sess.commit()
+
+        except AssertionError:
+            print(f'Failed to write resids for {prompt}, {i}')
+            sess.rollback()
+            continue
 
 
     # reference_text = "The greatest president of all time was Abraham"
