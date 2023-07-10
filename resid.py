@@ -3,6 +3,7 @@ from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, ARRAY, Floa
 from sqlalchemy.orm import relationship
 from database import Base, SessionLocal
 import numpy as np
+from sklearn.discriminant_analysis import StandardScaler
 
 from model import Model
 from prompt import Prompt
@@ -31,6 +32,8 @@ class Resid(Base):
     __table_args__ = (
         Index("idx_resids_model_prompt_layer_type_head_token_position_ca", 
               "model_id", "prompt_id", "layer", "type", "head", "token_position", "created_at"),
+        Index("idx_resids_model_layer_type_head_token_position_ca",
+              "model_id", "layer", "type", "head", "token_position", "created_at"),
     )
 
     @property
