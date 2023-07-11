@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from sqlalchemy import exists
+from sqlalchemy import and_, exists
 import torch.nn as nn
 import torch
 import einops
@@ -351,10 +351,14 @@ def main():
 
     model = sess.query(Model).filter(Model.name == model_name).one_or_none()
 
+    if not model:
+        return
+
     for i, prompt in enumerate(prompts_to_populate):
         print(f'Writing resids for {prompt}, {i}')
         
-        if sess.query(exists().where(Resid.prompt_id == prompt.id)).scalar():
+        if sess.query(exists().where(and_(Resid.prompt_id == prompt.id,
+                                          Resid.model_id == model.id))).scalar():
             print(f'Already wrote resids for {prompt}, {i}')
             continue
 
