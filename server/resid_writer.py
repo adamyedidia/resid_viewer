@@ -11,8 +11,7 @@ from transformer_lens.utils import gelu_new
 from database import SessionLocal
 from model import Model
 from prompt import Prompt
-from resid import add_resid
-from server.resid import Resid
+from resid import Resid, add_resid
 from settings import M1_MAC
 import math
 import numpy as np
