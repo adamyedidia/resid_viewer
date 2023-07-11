@@ -31,7 +31,7 @@ def write_openwebtext10k_prompts() -> None:
 
         truncated_encoded_text = encoded_text[:prompt_length]
         subprompt_singletext = enc.decode(truncated_encoded_text)
-        subprompt_decoded_by_token = [enc.decode([token]) for token in encoded_text]
+        subprompt_decoded_by_token = [enc.decode([token]) for token in truncated_encoded_text]
 
         if (existing_prompt := sess.query(Prompt).filter(Prompt.text == subprompt_singletext).first()) is not None:
             # print(f'Prompt already exists: {existing_prompt}')

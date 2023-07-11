@@ -93,7 +93,7 @@ def get_direction():
         .one_or_none()
     )
 
-    return jsonify(direction.to_json()) if direction else None
+    return jsonify(direction.to_json()) if direction else jsonify(None)
 
 
 if __name__ == '__main__':

@@ -4,6 +4,7 @@ import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
 import { Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import chroma from 'chroma-js';
 
 const darkTheme = createTheme({
   palette: {
@@ -44,10 +45,10 @@ const TypeSelector = ({ types, selectedType, onTypeChange }) => (
   </Grid>
 );
 
-const IndexSelector = ({ range, selectedIndex, onIndexChange }) => (
+const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
   <Grid item xs={12} md={4}>
     <FormControl variant="filled" fullWidth style={{backgroundColor: '#3a3a3a'}}>
-      <InputLabel style={{ color: 'white' }}>Index</InputLabel>
+      <InputLabel style={{ color: 'white' }}>{label}</InputLabel>
       <Select
         value={selectedIndex}
         onChange={(event) => onIndexChange(event.target.value)}
@@ -62,12 +63,13 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange }) => (
 
 const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
   const { dotProduct } = resid;
-  // console.log(dotProduct)
   const normalizedDotProduct = (dotProduct - minDotProduct) / (maxDotProduct - minDotProduct);
-  const color = dotProduct >= 0 ? `rgba(0, 0, 255, ${normalizedDotProduct})` : `rgba(255, 0, 0, ${normalizedDotProduct})`;
+  const colorScale = chroma.scale(['red', 'white', 'blue']).mode('lch');
+  const color = colorScale(normalizedDotProduct).hex();
+  const textColor = chroma.contrast(color, 'white') > chroma.contrast(color, 'black') ? 'white' : 'black';
 
   return (
-    <Box px={0.1} py={1} m={0} bgcolor={color} color="black" component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
+    <Box px={0.1} py={1} m={0} bgcolor={color} color={textColor} component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
       <Typography variant="body1"><pre style={{fontFamily: 'inherit', margin: 0}}>{resid.decodedToken}</pre></Typography>
     </Box>
   );
@@ -206,13 +208,15 @@ const App = () => {
               range={12}
               selectedIndex={selectedHead}
               onIndexChange={(index) => setSelectedHead(index)}
+              label='Head'
             />
           )}
           {maxComponentIndex && (
             <IndexSelector
-              range={64}
+              range={maxComponentIndex}
               selectedIndex={selectedComponentIndex}
               onIndexChange={(index) => setSelectedComponentIndex(index)}
+              label='Component Index'
             />
           )}
 
