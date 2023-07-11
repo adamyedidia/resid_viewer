@@ -60,12 +60,6 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange }) => (
   </Grid>
 );
 
-const ResidBox = ({ resid }) => (
-  <Box px={0.1} py={1} m={0} bgcolor="white" color="black" component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
-    <Typography variant="body1"><pre style={{fontFamily: 'inherit', margin: 0}}>{resid.decodedToken}</pre></Typography>
-  </Box>
-);
-
 const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
   const { dotProduct } = resid;
   // console.log(dotProduct)
@@ -113,7 +107,7 @@ const App = () => {
     };
 
     fetchResids();
-  }, [selectedType, selectedHead, selectedComponentIndex]);
+  }, [selectedType, selectedHead, selectedComponentIndex, resids?.length]);
 
   useEffect(() => {
     const fetchDirection = async () => {
