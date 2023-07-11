@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from sqlalchemy import exists
 import torch.nn as nn
 import torch
 import einops
@@ -11,6 +12,7 @@ from database import SessionLocal
 from model import Model
 from prompt import Prompt
 from resid import add_resid
+from server.resid import Resid
 from settings import M1_MAC
 import math
 import numpy as np
@@ -354,6 +356,10 @@ def main():
     for i, prompt in enumerate(prompts_to_populate):
         print(f'Writing resids for {prompt}, {i}')
         
+        if sess.query(exists().where(Resid.prompt_id == prompt.id)).scalar():
+            print(f'Already wrote resids for {prompt}, {i}')
+            continue
+
         try:
 
             text = prompt.text
@@ -386,6 +392,7 @@ def main():
                                 j,
                                 i,
                                 no_commit=True,
+                                skip_dedupe_check=True,
                             )
 
                 if shape[1] == 31:
@@ -405,6 +412,7 @@ def main():
                                     j,
                                     i,
                                     no_commit=True,
+                                    skip_dedupe_check=True,
                                 )                    
 
                     else:
@@ -423,6 +431,7 @@ def main():
                                 i,
                                 None,
                                 no_commit=True,
+                                skip_dedupe_check=True,
                             )
 
                 sess.commit()
