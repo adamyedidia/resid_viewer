@@ -65,6 +65,9 @@ class Resid(Base):
             'layer': self.layer,
             'type': self.type,
             'prompt': self.prompt.text,
+            'promptId': self.prompt.id,
+            'decodedToken': self.decoded_token,
+            'tokenPosition': self.token_position,
         }
     
 
@@ -76,11 +79,12 @@ def add_resid(sess,
               type: str,
               token_position: int,
               head: Optional[int] = None,
-              no_commit: bool = False) -> None:
+              no_commit: bool = False,
+              skip_dedupe_check: bool = False) -> None:
     
     assert len(arr.shape) == 1, "Resid must be 1-dimensional"
 
-    if (sess.query(exists().where(and_(
+    if not skip_dedupe_check and (sess.query(exists().where(and_(
         Resid.model == model,
         Resid.prompt == prompt,
         Resid.layer == layer,

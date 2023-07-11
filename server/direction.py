@@ -71,7 +71,7 @@ def add_direction(sess,
                   name: Optional[str] = None,
                   no_commit: bool = False) -> Direction:
     if user is None:
-        if (direction := sess.query(Direction).filter(and_(
+        if (existing_direction_obj := sess.query(Direction).filter(and_(
             Direction.model == model,
             Direction.layer == layer,
             Direction.type == type,
@@ -80,9 +80,9 @@ def add_direction(sess,
             Direction.name == name,
         )).one_or_none()) is not None:
             print('Direction already exists')
-            return direction  # type: ignore
+            return existing_direction_obj  # type: ignore
     
-    direction = Direction(
+    direction_obj = Direction(
         direction=direction,
         model=model,
         layer=layer,
@@ -96,8 +96,8 @@ def add_direction(sess,
         name=name,
     )
     
-    sess.add(direction)
+    sess.add(direction_obj)
     if not no_commit:
         sess.commit()
 
-    return direction
+    return direction_obj
