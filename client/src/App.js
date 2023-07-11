@@ -1,44 +1,20 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { TextField, Button, Box, Typography } from '@mui/material';
-
-const App = () => {
-  const [text, setText] = useState('');
-  const [result, setResult] = useState([]);
-
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const response = await axios.post('http://localhost:5000/api/predict', { text });
-    setResult(response.data);
-  }
-
+import { Select, MenuItem, Button } from '@mui/material';
+export default function App() {
+  const [type, setType] = useState('');
+  const handleChange = (event) => {
+    setType(event.target.value);
+  };
+  const onClick = () => {
+    console.log('Hello!');
+  };
   return (
-    <Box sx={{ m: 2 }}>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Input Text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          variant="outlined"
-          fullWidth
-        />
-        <Button type="submit" variant="contained" color="primary" sx={{ mt: 2 }}>
-          Submit
-        </Button>
-      </form>
-      <Box sx={{ mt: 3 }}>
-        {result.map((value, index) => (
-          <Typography
-            key={index}
-            component="span"
-            sx={{ color: value > 0 ? 'blue' : 'red' }}
-          >
-            {value}
-          </Typography>
-        ))}
-      </Box>
-    </Box>
+    <>
+      <Select value={type} onChange={handleChange}>
+        <MenuItem value={10}>Type1</MenuItem>
+        <MenuItem value={20}>Type2</MenuItem>
+      </Select>
+      <Button onClick={onClick}>Hello!</Button>
+    </>
   );
-};
-
-export default App;
+}
