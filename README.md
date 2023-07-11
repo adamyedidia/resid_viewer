@@ -38,7 +38,7 @@ You'll also need to install TransformerLens:
 
 Finally, create an empty file called `local_settings.py` in the `server/` directory.
 
-To run the frontend, install `npm`, then run:
+To run the frontend, install `npm`, then, from the `client/` directory, run:
 
 `npm install`
 
