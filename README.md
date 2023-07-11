@@ -36,4 +36,10 @@ You'll also need to install TransformerLens:
 
 `pip install git+https://github.com/neelnanda-io/TransformerLens`
 
-Finally, create an empty file called `local_settings.py` in this directory.
+Finally, create an empty file called `local_settings.py` in the `server/` directory.
+
+To run the frontend, install `npm`, then run:
+
+`npm install`
+
+`npm start`
