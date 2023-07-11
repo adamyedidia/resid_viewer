@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime, timedelta
 import torch.nn as nn
 import torch
 import einops
@@ -344,6 +345,7 @@ def main():
     prompts_to_populate = (
         sess.query(Prompt)
         .filter(Prompt.length_in_tokens == 30)
+        .filter(Prompt.created_at > datetime.now() - timedelta(hours=1))
         .all()
     )
 
