@@ -7,6 +7,7 @@ from sklearn.discriminant_analysis import StandardScaler
 
 from model import Model
 from prompt import Prompt
+from utils import enc
 
 class Resid(Base):
     __tablename__ = "resids"
@@ -41,6 +42,10 @@ class Resid(Base):
         # The minus one is there because the token position is 1-indexed
         # The 0 position is reserved for the |<endoftext>| token that gets prepended
         # to the prompt
+        if self.token_position == 0:  # type: ignore
+            # endoftext token
+            return 50256
+
         return self.prompt.encoded_text_split_by_token[self.token_position - 1]
     
     @property
@@ -48,6 +53,9 @@ class Resid(Base):
         # The minus one is there because the token position is 1-indexed
         # The 0 position is reserved for the |<endoftext>| token that gets prepended
         # to the prompt
+        if self.token_position == 0:  # type: ignore
+            # endoftext token
+            return enc.decode([50256])
         return self.prompt.text_split_by_token[self.token_position - 1]
 
     @property
