@@ -90,8 +90,23 @@ const App = () => {
   const [maxDotProduct, setMaxDotProduct] = useState(1);
   const [minDotProduct, setMinDotProduct] = useState(-1);
 
+  const calculateDotProducts = (residsToCalculate, directionToCalculate) => {
+    if (!residsToCalculate?.length || !directionToCalculate?.direction) return;
+    console.log('calculating dot products')
+    const dotProducts = residsToCalculate.map(resid => {
+      const dotProduct = resid.resid.reduce((sum, value, i) => sum + value * directionToCalculate.direction[i], 0);
+      return {...resid, dotProduct};
+    });
+    const maxDotProduct = Math.max(...dotProducts.map(({dotProduct}) => dotProduct));
+    const minDotProduct = Math.min(...dotProducts.map(({dotProduct}) => dotProduct));
+    setResids(dotProducts);
+    setMaxDotProduct(maxDotProduct);
+    setMinDotProduct(minDotProduct);
+  }
+
   useEffect(() => {
     if (resids?.length) return;
+    console.log('Fetching resids!')
     const fetchResids = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api/resids", {
@@ -102,7 +117,9 @@ const App = () => {
             component_index: selectedComponentIndex,
           },
         });
-        setResids(response.data);
+        const newResids = response.data;
+        calculateDotProducts(newResids, direction);
+        setResids(newResids);
       } catch (error) {
         console.error(error);
       }
@@ -112,6 +129,7 @@ const App = () => {
   }, [selectedType, selectedHead, selectedComponentIndex, resids?.length]);
 
   useEffect(() => {
+    console.log('Fetching direction!')
     const fetchDirection = async () => {
       try {
         const response = await axios.get("http://127.0.0.1:5000/api/directions", {
@@ -122,7 +140,9 @@ const App = () => {
             component_index: selectedComponentIndex,
           },
         });
-        setDirection(response.data);
+        const newDirection = response.data;
+        calculateDotProducts(resids, newDirection);
+        setDirection(newDirection);
       } catch (error) {
         console.error(error);
       }
@@ -131,19 +151,19 @@ const App = () => {
     fetchDirection();
   }, [selectedType, selectedHead, selectedComponentIndex]);
 
-  useEffect(() => {
-    if (!resids?.length || !direction?.direction) return;
-    console.log('calculating dot products')
-    const dotProducts = resids.map(resid => {
-      const dotProduct = resid.resid.reduce((sum, value, i) => sum + value * direction.direction[i], 0);
-      return {...resid, dotProduct};
-    });
-    const maxDotProduct = Math.max(...dotProducts.map(({dotProduct}) => dotProduct));
-    const minDotProduct = Math.min(...dotProducts.map(({dotProduct}) => dotProduct));
-    setResids(dotProducts);
-    setMaxDotProduct(maxDotProduct);
-    setMinDotProduct(minDotProduct);
-  }, [resids, direction]);
+  // useEffect(() => {
+  //   if (!resids?.length || !direction?.direction) return;
+  //   console.log('calculating dot products')
+  //   const dotProducts = resids.map(resid => {
+  //     const dotProduct = resid.resid.reduce((sum, value, i) => sum + value * direction.direction[i], 0);
+  //     return {...resid, dotProduct};
+  //   });
+  //   const maxDotProduct = Math.max(...dotProducts.map(({dotProduct}) => dotProduct));
+  //   const minDotProduct = Math.min(...dotProducts.map(({dotProduct}) => dotProduct));
+  //   setResids(dotProducts);
+  //   setMaxDotProduct(maxDotProduct);
+  //   setMinDotProduct(minDotProduct);
+  // }, [selectedType, selectedHead, selectedComponentIndex, resids?.length]);
 
   console.log(resids);
   console.log(direction);

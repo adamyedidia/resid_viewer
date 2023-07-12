@@ -44,7 +44,7 @@ def get_resids():
         .filter(Resid.type == type)
         .filter(Resid.head == head)
         .order_by(func.random())
-        .limit(50)
+        .limit(20)
         .all()
     )
 
