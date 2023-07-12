@@ -7,6 +7,7 @@ from direction import Direction
 from direction_description import DirectionDescription
 from prompt import Prompt
 from sqlalchemy import func
+from utils import enc
 
 def main():
     sess = SessionLocal()
@@ -24,6 +25,7 @@ def main():
         "Prompt": Prompt,
         "func": func,
         "gpt2_small": gpt2_small,
+        "enc": enc,
     }
 
     embed(user_ns=user_ns)

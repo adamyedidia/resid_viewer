@@ -29,6 +29,7 @@ reference_text = "I am an amazing autoregressive, decoder-only, GPT-2 style tran
 tokens = reference_gpt2.to_tokens(reference_text)
 
 tokens = cuda(tokens)
+print(tokens)
 logits, cache = reference_gpt2.run_with_cache(tokens)
 
 log_probs = logits.log_softmax(dim=-1)  # type: ignore
