@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper } from '@mui/material';
+import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper, TextField } from '@mui/material';
 import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
 import { Typography } from '@mui/material';
@@ -252,15 +252,11 @@ const App = () => {
               label='Component Index'
             />
           )}
-
-          <Grid item xs={12}>
-            <Box display="flex" justifyContent="flex-start">
-              <Button variant="contained" color="primary" onClick={fetchResids}>
-                Submit
-              </Button>
-            </Box>
+          <Grid item xs={12} md={6}>
+            <TextField label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth />
           </Grid>
         </Grid>
+        <br />
         <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>
