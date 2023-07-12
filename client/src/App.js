@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper, TextField } from '@mui/material';
+import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper, TextField, Slider } from '@mui/material';
 import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
 import { Typography } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import chroma from 'chroma-js';
+import Draggable from 'react-draggable';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import Dialog from '@mui/material/Dialog';
 
 const darkTheme = createTheme({
   palette: {
@@ -28,6 +32,79 @@ const darkTheme = createTheme({
     },
   },
 });
+
+// Draggable Dialog Title
+const DraggableDialogTitle = (props) => {
+  const { children, ...rest } = props;
+
+  const handleMouseDown = (event) => {
+    // Prevent Dialog from getting focus
+    event.preventDefault();
+  };
+
+  return (
+    <DialogTitle {...rest} style={{ cursor: 'move' }} onMouseDown={handleMouseDown}>
+      {children}
+    </DialogTitle>
+  );
+};
+
+const DraggablePaper = (props) => {
+  return (
+    <Draggable
+      handle="#draggable-dialog-title"
+      cancel={'[class*="MuiDialogContent-root"]'}
+    >
+      <Paper {...props} />
+    </Draggable>
+  );
+};
+
+// Multiple Sliders component
+const SlidersArray = ({ sliders, setSliders, directions }) => {
+  const handleChange = (index, newValue) => {
+    sliders[index] = newValue;
+
+    let squaredSliders = sliders.map(a => a * a);
+    let squaredSum = squaredSliders.reduce((a, b) => a + b, 0);
+    if (squaredSum !== 1) {
+      let updatedSliders = sliders.map((value) => {
+        return value / Math.sqrt(squaredSum);
+      });
+      setSliders(updatedSliders);
+    } else {
+      setSliders(prevState => {
+        let newState = [...prevState];
+        newState[index] = newValue;
+        return newState;
+      });
+    }
+  }
+
+  const getLabel = (index) => {
+    return directions[index]?.name || `PCA component ${index}`
+  }
+
+  return (
+    <Box sx={{ width: 200 }}>
+      {sliders.map((sliderValue, index) => (
+        <Box key={`slider-${index}`} sx={{ mt: 2 }}>
+          <Typography id={`slider-${index}-label`}>
+            {`${getLabel(index)}: ${sliderValue.toFixed(2)}`}
+          </Typography>
+          <Slider
+            min={-1}
+            max={1}
+            step={0.05}
+            value={sliderValue}
+            onChange={(event, newValue) => handleChange(index, newValue)}
+            aria-labelledby={`slider-${index}-label`}
+          />
+        </Box>
+      ))}
+    </Box>
+  );
+};
 
 const TypeSelector = ({ types, selectedType, onTypeChange }) => (
   <Grid item xs={12} md={4}>
@@ -82,13 +159,58 @@ const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
 );
 
 const App = () => {
+  const [directionSliderDialogOpen, setDirectionSliderDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [selectedHead, setSelectedHead] = useState("");
   const [selectedComponentIndex, setSelectedComponentIndex] = useState("");
   const [resids, setResids] = useState([]);
   const [direction, setDirection] = useState([]);
+  const [allDirections, setAllDirections] = useState([]);
   const [maxDotProduct, setMaxDotProduct] = useState(1);
   const [minDotProduct, setMinDotProduct] = useState(-1);
+  const [directionSliders, setDirectionSliders] = useState(Array(30).fill(0));
+  const [dialogDirectionName, setDialogDirectionName] = useState("");
+  const [dialogDirectionDescription, setDialogDirectionDescription] = useState("");
+
+  // Store the user's username in local storage
+  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+
+  const handleUsernameChange = (event) => {
+    setUsername(event.target.value);
+    localStorage.setItem('username', event.target.value);
+  };
+
+  const handleOpenDirectionSliderDialog = () => {
+    let newSliders = Array(30).fill(0);
+    newSliders[selectedComponentIndex] = 1;
+    setDirectionSliders(newSliders);
+    setDirectionSliderDialogOpen(true);
+  };
+
+  const handleCloseDirectionSliderDialog = () => {
+    setDirectionSliderDialogOpen(false);
+  };
+
+  const computeDirection = () => {
+    // console.log('direction: ', direction?.direction)
+    if (!direction?.direction?.length) return null;
+    console.log('All directions: ', allDirections)
+    let newDirection = Array(direction?.direction?.length).fill(0);
+    for (let i = 0; i < 30; i++) {
+      for (let j = 0; j < direction?.direction?.length; j++) {
+        newDirection[j] += directionSliders[i] * allDirections[i]?.direction?.[j];
+      }
+    }
+    calculateDotProducts(resids, { direction: newDirection });
+    return newDirection;
+  }
+
+  useEffect(() => {
+    const computedDirection = computeDirection()
+    // console.log('Computed direction: ', computedDirection)
+    if (computedDirection) setDirection({direction: computedDirection});
+    // eslint-disable-next-line
+  }, [directionSliders]);
 
   const calculateDotProducts = (residsToCalculate, directionToCalculate) => {
     if (!residsToCalculate?.length || !directionToCalculate?.direction) return;
@@ -151,7 +273,41 @@ const App = () => {
     } catch (error) {
       console.error(error);
     }
+
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/all_directions", {
+        params: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+        },
+      });
+      console.log(response.data)
+      
+      setAllDirections(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+
   };
+
+  const handleSaveDirection = async () => {
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/api/directions", {
+        json: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+          direction: direction.direction,
+          username: username,
+          direction_name: dialogDirectionName,
+          direction_description: dialogDirectionDescription,
+        }
+      }); 
+    } catch (error) {
+      console.error(error);
+    }
+  }
 
   useEffect(() => {
     fetchResidsAndDirection();
@@ -181,9 +337,6 @@ const App = () => {
   //   setMaxDotProduct(maxDotProduct);
   //   setMinDotProduct(minDotProduct);
   // }, [selectedType, selectedHead, selectedComponentIndex, resids?.length]);
-
-  console.log(resids);
-  console.log(direction);
 
   const groupedResids = resids.reduce((groups, resid) => {
     (groups[resid.promptId] = groups[resid.promptId] || []).push(resid);
@@ -242,9 +395,50 @@ const App = () => {
             />
           )}
           <Grid item xs={12} md={6}>
-            <TextField label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth />
+            <TextField label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth onChange={handleUsernameChange}/>
           </Grid>
         </Grid>
+        <br />
+        {selectedType && (!needsHead || selectedHead) && <Grid container spacing={3} justify="center">
+          <Grid item xs={12} md={6}>
+            <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
+              Find a new direction
+            </Button>
+          </Grid>
+        </Grid>}
+        <Dialog
+          open={directionSliderDialogOpen}
+          onClose={handleCloseDirectionSliderDialog}
+          PaperComponent={DraggablePaper}
+          aria-labelledby="draggable-dialog-title"
+        >
+          <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+            <Paper>
+              <DraggableDialogTitle id="draggable-dialog-title">
+                Find a new direction
+              </DraggableDialogTitle>
+              <DialogContent dividers={true} style={{height: '300px'}}>
+                <Grid container spacing={3} justify="center">
+                  <Grid item>
+                    {/* Give your direction a name */}
+                    <TextField label="Direction name" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth value={dialogDirectionName} onChange={e => setDialogDirectionName(e.target.value)}/>
+                  </Grid>
+                  <Grid item>
+                    {/* Give your direction a description */}
+                    <TextField label="Direction description" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth multiline value={dialogDirectionDescription} onChange={e => setDialogDirectionDescription(e.target.value)}/>
+                  </Grid>
+                  <Grid item>
+                    {/* Save your direction */}
+                    <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>Save Direction</Button>
+                  </Grid>
+                  <Grid item>
+                    <SlidersArray sliders={directionSliders} setSliders={setDirectionSliders} directions={allDirections}/>
+                  </Grid>
+                </Grid>
+              </DialogContent>
+            </Paper>
+          </Draggable>
+        </Dialog>
         <br />
         <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (

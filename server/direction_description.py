@@ -15,6 +15,8 @@ class DirectionDescription(Base):
     direction_id = Column(Integer, ForeignKey("directions.id"), nullable=False, index=True)
     direction = relationship("Direction", lazy="joined")
 
+    description = Column(String, nullable=False)
+
     def __repr__(self):
         return f"<DirectionDescription {self.id} by {self.user.name} of Direction {self.direction.id}>"
     

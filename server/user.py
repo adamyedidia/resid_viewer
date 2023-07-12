@@ -5,7 +5,7 @@ class User(Base):
     __tablename__ = "users"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False, index=True)
+    name = Column(String, nullable=False, index=True, unique=True)
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
@@ -18,3 +18,14 @@ class User(Base):
             'name': self.name,
             'created_at': self.created_at,
         }
+    
+
+def add_or_get_user(sess, username: str, no_commit: bool = False) -> User:
+    user = User.query.filter_by(name=username).first()
+    if user is None:
+        user = User(name=username)
+        sess.add(user)
+
+        if not no_commit:
+            sess.commit()
+    return user
