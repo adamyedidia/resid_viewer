@@ -57,6 +57,7 @@ def get_resids():
         .filter(Resid.type == type)
         .filter(Resid.head == head)
         .filter(Resid.prompt_id.in_(resid_prompt_ids))
+        .filter(Resid.token_position > 0)  # The leading |<endoftext>| token is weird
         .all()
     )
 
