@@ -104,62 +104,67 @@ const App = () => {
     setMinDotProduct(minDotProduct);
   }
 
-  useEffect(() => {
+  const fetchResidsAndDirection = async () => {
     console.log('Fetching resids and direction!')
-    const fetchResidsAndDirection = async () => {
-      try {
-        const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
-          params: {
-            model_name: "gpt2-small",
-            type: selectedType,
-            head: selectedHead,
-            component_index: selectedComponentIndex,
-          },
-        });
-        const newResids = residResponse.data;
+    try {
+      const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
+        params: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+          component_index: selectedComponentIndex,
+        },
+      });
+      const newResids = residResponse.data;
 
-        const directionResponse = await axios.get("http://127.0.0.1:5000/api/directions", {
-          params: {
-            model_name: "gpt2-small",
-            type: selectedType,
-            head: selectedHead,
-            component_index: selectedComponentIndex,
-          },
-        });
-        const newDirection = directionResponse.data;
-        calculateDotProducts(newResids, newDirection);
-        // setResids(newResids);
-        setDirection(newDirection);
-      } catch (error) {
-        console.error(error);
-      }
-    };
+      const directionResponse = await axios.get("http://127.0.0.1:5000/api/directions", {
+        params: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+          component_index: selectedComponentIndex,
+        },
+      });
+      const newDirection = directionResponse.data;
+      calculateDotProducts(newResids, newDirection);
+      // setResids(newResids);
+      setDirection(newDirection);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
+  const fetchDirection = async () => {
+    console.log('Fetching direction!')    
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/directions", {
+        params: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+          component_index: selectedComponentIndex,
+        },
+      });
+      const newDirection = response.data;
+      calculateDotProducts(resids, newDirection);
+      setDirection(newDirection);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
     fetchResidsAndDirection();
     // eslint-disable-next-line
   }, [selectedType, selectedHead]);
 
   useEffect(() => {
-    console.log('Fetching direction!')
-    const fetchDirection = async () => {
-      try {
-        const response = await axios.get("http://127.0.0.1:5000/api/directions", {
-          params: {
-            model_name: "gpt2-small",
-            type: selectedType,
-            head: selectedHead,
-            component_index: selectedComponentIndex,
-          },
-        });
-        const newDirection = response.data;
-        calculateDotProducts(resids, newDirection);
-        setDirection(newDirection);
-      } catch (error) {
-        console.error(error);
-      }
-    };
-
-    fetchDirection();
+    if (!resids?.length) {
+      fetchResidsAndDirection();
+    }
+    else {
+      fetchDirection();
+    }
     // eslint-disable-next-line
   }, [selectedComponentIndex]);
 
@@ -208,22 +213,6 @@ const App = () => {
     typeShape?.includes(3072) ? 3072 :
     null
   )
-
-  const fetchResids = async () => {
-    try {
-      const response = await axios.get("/api/resids", {
-        params: {
-          type: selectedType,
-          head: selectedHead,
-          component_index: selectedComponentIndex,
-        },
-      });
-      // handle the response
-      console.log(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   return (
     <ThemeProvider theme={darkTheme}>
