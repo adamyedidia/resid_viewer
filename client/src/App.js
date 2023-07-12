@@ -105,11 +105,10 @@ const App = () => {
   }
 
   useEffect(() => {
-    if (resids?.length) return;
-    console.log('Fetching resids!')
-    const fetchResids = async () => {
+    console.log('Fetching resids and direction!')
+    const fetchResidsAndDirection = async () => {
       try {
-        const response = await axios.get("http://127.0.0.1:5000/api/resids", {
+        const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
           params: {
             model_name: "gpt2-small",
             type: selectedType,
@@ -117,16 +116,28 @@ const App = () => {
             component_index: selectedComponentIndex,
           },
         });
-        const newResids = response.data;
-        calculateDotProducts(newResids, direction);
-        setResids(newResids);
+        const newResids = residResponse.data;
+
+        const directionResponse = await axios.get("http://127.0.0.1:5000/api/directions", {
+          params: {
+            model_name: "gpt2-small",
+            type: selectedType,
+            head: selectedHead,
+            component_index: selectedComponentIndex,
+          },
+        });
+        const newDirection = directionResponse.data;
+        calculateDotProducts(newResids, newDirection);
+        // setResids(newResids);
+        setDirection(newDirection);
       } catch (error) {
         console.error(error);
       }
     };
 
-    fetchResids();
-  }, [selectedType, selectedHead, selectedComponentIndex, resids?.length]);
+    fetchResidsAndDirection();
+    // eslint-disable-next-line
+  }, [selectedType, selectedHead]);
 
   useEffect(() => {
     console.log('Fetching direction!')
@@ -149,7 +160,8 @@ const App = () => {
     };
 
     fetchDirection();
-  }, [selectedType, selectedHead, selectedComponentIndex]);
+    // eslint-disable-next-line
+  }, [selectedComponentIndex]);
 
   // useEffect(() => {
   //   if (!resids?.length || !direction?.direction) return;
