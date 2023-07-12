@@ -233,7 +233,8 @@ const App = () => {
           )}
           {maxComponentIndex && (
             <IndexSelector
-              range={maxComponentIndex}
+              // range={maxComponentIndex}
+              range={30}
               selectedIndex={selectedComponentIndex}
               onIndexChange={(index) => setSelectedComponentIndex(index)}
               label='Component Index'
