@@ -69,8 +69,8 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
   const textColor = chroma.contrast(color, 'white') > chroma.contrast(color, 'black') ? 'white' : 'black';
 
   return (
-    <Box px={0.1} py={1} m={0} bgcolor={color} color={textColor} component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
-      <Typography variant="body1"><pre style={{fontFamily: 'inherit', margin: 0}}>{resid.decodedToken}</pre></Typography>
+    <Box px={0.1} py={0.2} m={0} bgcolor={color} color={textColor} component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
+      <Typography variant="body1"><pre style={{fontFamily: 'Times New Roman', margin: 0}}>{resid.decodedToken}</pre></Typography>
     </Box>
   );
 };
