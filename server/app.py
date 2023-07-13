@@ -17,6 +17,12 @@ app = Flask(__name__)
 CORS(app)
 
 
+def parse_optional_int(val):
+    try:
+        return int(val)
+    except ValueError:
+        return None
+
 
 @app.route('/api/resids', methods=['GET'])
 def get_resids():
@@ -24,7 +30,7 @@ def get_resids():
 
     model_name = request.args.get('model_name')
     type = request.args.get('type')
-    head = request.args.get('head') or None
+    head = parse_optional_int(request.args.get('head'))
     component_index = request.args.get('component_index')
 
     if not type:
@@ -73,8 +79,8 @@ def get_direction():
 
     model_name = request.args.get('model_name')
     type = request.args.get('type')
-    head = request.args.get('head') or None
-    component_index = request.args.get('component_index') or None
+    head = parse_optional_int(request.args.get('head'))
+    component_index = parse_optional_int(request.args.get('component_index'))
 
     if not type:
         return jsonify([])
@@ -106,7 +112,7 @@ def get_all_directions():
 
     model_name = request.args.get('model_name')
     type = request.args.get('type')
-    head = request.args.get('head') or None
+    head = parse_optional_int(request.args.get('head'))
 
     print(type)
 
@@ -141,7 +147,7 @@ def create_direction():
     data = request.get_json()
     model_name = data['model_name']
     type = data['type']
-    head = data['head']
+    head = parse_optional_int(data['head'])
     direction = data['direction']
     username = data['username']
     direction_name = data['direction_name']
@@ -171,6 +177,8 @@ def create_direction():
     ))
 
     sess.commit()
+
+    return jsonify(direction_obj.to_json())
 
 
 if __name__ == '__main__':

@@ -21,7 +21,7 @@ class User(Base):
     
 
 def add_or_get_user(sess, username: str, no_commit: bool = False) -> User:
-    user = User.query.filter_by(name=username).first()
+    user = sess.query(User).filter_by(name=username).first()
     if user is None:
         user = User(name=username)
         sess.add(user)

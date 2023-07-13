@@ -183,15 +183,13 @@ const MemoizedDialogContent = React.memo(({
   const handleSaveDirection = async () => {
     try {
       const response = await axios.post("http://127.0.0.1:5000/api/directions", {
-        json: {
-          model_name: "gpt2-small",
-          type: selectedType,
-          head: selectedHead,
-          direction: direction.direction,
-          username: username,
-          direction_name: dialogDirectionName,
-          direction_description: dialogDirectionDescription,
-        }
+        model_name: "gpt2-small",
+        type: selectedType,
+        head: selectedHead,
+        direction: direction.direction,
+        username: username,
+        direction_name: dialogDirectionName,
+        direction_description: dialogDirectionDescription,
       }); 
     } catch (error) {
       console.error(error);
