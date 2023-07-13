@@ -33,6 +33,25 @@ const darkTheme = createTheme({
   },
 });
 
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(
+    () => {
+      const handler = setTimeout(() => {
+        setDebouncedValue(value);
+      }, delay);
+
+      return () => {
+        clearTimeout(handler);
+      };
+    },
+    [value, delay]
+  );
+
+  return debouncedValue;
+}
+
 // Draggable Dialog Title
 const DraggableDialogTitle = (props) => {
   const { children, ...rest } = props;
@@ -174,10 +193,11 @@ const App = () => {
 
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const debouncedUsername = useDebounce(username, 500);
 
   const handleUsernameChange = (event) => {
     setUsername(event.target.value);
-    localStorage.setItem('username', event.target.value);
+    // localStorage.setItem('username', event.target.value);
   };
 
   const handleOpenDirectionSliderDialog = () => {
@@ -190,6 +210,24 @@ const App = () => {
   const handleCloseDirectionSliderDialog = () => {
     setDirectionSliderDialogOpen(false);
   };
+
+  useEffect(
+    () => {
+      if ((!debouncedUsername) || (debouncedUsername === 'undefined')) return;
+      // Now we call our API or do whatever we need with the debounced value
+      localStorage.setItem('username', debouncedUsername);
+    },
+    [debouncedUsername]  // Only call effect if debounced search term changes
+  );
+
+  useEffect(
+    () => {
+      console.log('Triggering!')
+      console.log(localStorage.getItem('username'))
+      setUsername(localStorage.getItem('username') || '');
+    },
+    []
+  )
 
   const computeDirection = () => {
     // console.log('direction: ', direction?.direction)
@@ -399,7 +437,7 @@ const App = () => {
             />
           )}
           <Grid item xs={12} md={6}>
-            <TextField label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth onChange={handleUsernameChange}/>
+            <TextField value={username} label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth onChange={handleUsernameChange}/>
           </Grid>
         </Grid>
         <br />
