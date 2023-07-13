@@ -280,7 +280,6 @@ const App = () => {
   const [directionSliders, setDirectionSliders] = useState(Array(NUM_SLIDERS).fill(0));
   const [loadingResids, setLoadingResids] = useState(false);
 
-
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
   const debouncedUsername = useDebounce(username, 500);

@@ -1,3 +1,4 @@
+from typing import Optional
 from flask import Flask, request, jsonify
 import numpy as np
 from database import SessionLocal
@@ -8,7 +9,7 @@ from direction import Direction
 from flask_cors import CORS
 from direction import add_direction
 from utils import get_layer_num_from_resid_type
-from user import add_or_get_user
+from user import add_or_get_user, User
 from direction_description import DirectionDescription
 
 from settings import DATABASE_URL
@@ -81,6 +82,7 @@ def get_pca_direction():
     type = request.args.get('type')
     head = parse_optional_int(request.args.get('head'))
     component_index = parse_optional_int(request.args.get('component_index'))
+    username = request.args.get('username')
 
     if not type:
         return jsonify([])
@@ -103,8 +105,32 @@ def get_pca_direction():
         .filter(Direction.generated_by_process == 'pca')
         .one_or_none()
     )
+    if direction is None:
+        return jsonify(None)
 
-    return jsonify(direction.to_json()) if direction else jsonify(None)
+    user: Optional[User] = None
+    if username:
+        user = add_or_get_user(sess, username)
+
+    my_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.user == user)
+        .filter(DirectionDescription.direction == direction)
+        .one_or_none()
+    )
+
+    best_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.direction == direction)
+        .order_by(DirectionDescription.upvotes.desc())
+        .first()
+    )
+
+    return jsonify({
+        **direction.to_json(), 
+        **({'myDescription': my_direction_description.description} if my_direction_description else {}),
+        **({'bestDescription': best_direction_description.description} if best_direction_description else {}),
+    })
 
 
 @app.route('/api/all_directions', methods=['GET'])

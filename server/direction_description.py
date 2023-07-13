@@ -17,6 +17,14 @@ class DirectionDescription(Base):
 
     description = Column(String, nullable=False)
 
+    upvotes = Column(Integer, nullable=False, server_default="0", index=True)
+
+    __table_args__ = (
+        Index("idx_user_upvotes_created_at", "user_id", "upvotes", "created_at"),
+        Index("idx_direction_upvotes_created_at", "direction_id", "upvotes", "created_at"),
+        Index("idx_direction_user", "direction_id", "user_id", unique=True),
+    )
+
     def __repr__(self):
         return f"<DirectionDescription {self.id} by {self.user.name} of Direction {self.direction.id}>"
     
