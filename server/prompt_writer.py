@@ -22,7 +22,7 @@ def write_openwebtext10k_prompts() -> None:
     counter = 0
 
     prompt_length = 30
-    for i in range(int(sys.argv[0]), int(sys.argv[1])):  # type: ignore
+    for i in range(int(sys.argv[1]), int(sys.argv[2])):  # type: ignore
         print(f'Writing prompt {i} of {len(ds)} of length {prompt_length}')  # type: ignore
 
         item = ds[i]  # type: ignore
