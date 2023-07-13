@@ -35,6 +35,10 @@ const darkTheme = createTheme({
   },
 });
 
+function LoadingIndicator() {
+  return <h2>Loading...</h2>;
+}
+
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -251,6 +255,8 @@ const App = () => {
   const [maxDotProduct, setMaxDotProduct] = useState(1);
   const [minDotProduct, setMinDotProduct] = useState(-1);
   const [directionSliders, setDirectionSliders] = useState(Array(NUM_SLIDERS).fill(0));
+  const [loadingResids, setLoadingResids] = useState(false);
+
 
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
@@ -345,6 +351,7 @@ const App = () => {
   const fetchResidsAndDirection = async () => {
     console.log('Fetching resids and direction!')
     try {
+      setLoadingResids(true);
       const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
         params: {
           model_name: "gpt2-small",
@@ -365,6 +372,7 @@ const App = () => {
       });
       const newDirection = directionResponse.data;
       calculateDotProducts(newResids, newDirection);
+      setLoadingResids(false);
       // setResids(newResids);
       setDirection(newDirection);
     } catch (error) {
@@ -515,13 +523,13 @@ const App = () => {
           </Draggable>
         </Dialog>
         <br />
-        <Grid container spacing={1}>
+        {loadingResids ? <LoadingIndicator /> : <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>
               <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
             </Grid>
           ))}
-        </Grid>
+        </Grid>}
       </div>
     </ThemeProvider>
   );
