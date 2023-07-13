@@ -74,7 +74,7 @@ def get_resids():
 
 
 @app.route('/api/directions', methods=['GET'])
-def get_direction():
+def get_pca_direction():
     sess = SessionLocal()
 
     model_name = request.args.get('model_name')
@@ -100,6 +100,7 @@ def get_direction():
         .filter(Direction.type == type)
         .filter(Direction.head == head)
         .filter(Direction.component_index == component_index)
+        .filter(Direction.generated_by_process == 'pca')
         .one_or_none()
     )
 
