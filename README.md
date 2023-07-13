@@ -43,3 +43,13 @@ To run the frontend, install `npm`, then, from the `client/` directory, run:
 `npm install`
 
 `npm start`
+
+To populate the backend with prompts/resids/PCA directions, run the following from the `server/` directory:
+
+`python prompt_writer.py 0 100`
+
+`python resid_writer.py`
+
+`python direction_writer.py`
+
+If you want a larger number of prompts in the mix (which will ultimately give more accurate PCA directions), you can increase that 100 to an 1000 or a 10000, but then it'll take longer to run.
