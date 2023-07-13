@@ -163,6 +163,29 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
   </Grid>
 );
 
+const DirectionInfo = ({ direction }) => {
+  if (!direction) return null;
+  const directionName = direction?.name || `PCA component ${direction?.componentIndex}`;
+  const percentVariance = direction?.fractionOfVarianceExplained ? Math.round(direction.fractionOfVarianceExplained * 10000) / 100 : null;
+  return (
+    <>
+      <Grid container direction="column" spacing={2}>
+        <Grid item xs={12}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+            {`Currently showing Direction: ${directionName}`}
+          </Typography>
+        </Grid>
+        {percentVariance !== null ? <Grid item xs={12}>
+          <Typography variant="body1">
+            {`This direction explains ${percentVariance} percent of the variance`}
+          </Typography>
+        </Grid> : null}
+      </Grid>
+      <br/>
+    </>
+    );
+  }
+
 const MemoizedDialogContent = React.memo(({
   directionSliders, 
   setDirectionSliders, 
@@ -528,6 +551,7 @@ const App = () => {
           <LoadingIndicator />
           <br />
         </>}
+        <DirectionInfo direction={direction}/>
         <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>
