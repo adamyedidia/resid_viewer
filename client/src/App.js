@@ -226,6 +226,23 @@ const App = () => {
     setMinDotProduct(minDotProduct);
   }
 
+  const fetchAllDirections = async () => {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/api/all_directions", {
+        params: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+        },
+      });
+      console.log(response.data)
+      
+      setAllDirections(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const fetchResidsAndDirection = async () => {
     console.log('Fetching resids and direction!')
     try {
@@ -254,6 +271,7 @@ const App = () => {
     } catch (error) {
       console.error(error);
     }
+    fetchAllDirections();
   };
 
   const fetchDirection = async () => {
@@ -274,21 +292,7 @@ const App = () => {
       console.error(error);
     }
 
-    try {
-      const response = await axios.get("http://127.0.0.1:5000/api/all_directions", {
-        params: {
-          model_name: "gpt2-small",
-          type: selectedType,
-          head: selectedHead,
-        },
-      });
-      console.log(response.data)
-      
-      setAllDirections(response.data);
-    } catch (error) {
-      console.error(error);
-    }
-
+    fetchAllDirections();
   };
 
   const handleSaveDirection = async () => {
