@@ -353,7 +353,8 @@ def main():
     model = sess.query(Model).filter(Model.name == model_name).one_or_none()
 
     if model is None:
-        sess.add(Model(name=model_name))
+        model = Model(name=model_name)
+        sess.add(model)
         sess.commit()
 
     if not model:
