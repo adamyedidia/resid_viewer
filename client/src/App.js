@@ -484,7 +484,7 @@ const App = () => {
           </Grid>
         </Grid>
         <br />
-        {selectedType && (!needsHead || selectedHead) && <Grid container spacing={3} justify="center">
+        {selectedType && (!needsHead || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
           <Grid item xs={12} md={6}>
             <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
               Find a new direction
