@@ -350,6 +350,7 @@ const App = () => {
 
   const fetchResidsAndDirection = async () => {
     console.log('Fetching resids and direction!')
+    if (!selectedType || [null, undefined, ""].includes(selectedComponentIndex)) return;
     try {
       setLoadingResids(true);
       const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
@@ -523,13 +524,17 @@ const App = () => {
           </Draggable>
         </Dialog>
         <br />
-        {loadingResids ? <LoadingIndicator /> : <Grid container spacing={1}>
+        {loadingResids && <>
+          <LoadingIndicator />
+          <br />
+        </>}
+        <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>
               <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
             </Grid>
           ))}
-        </Grid>}
+        </Grid>
       </div>
     </ThemeProvider>
   );
