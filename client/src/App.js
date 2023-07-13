@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper, TextField, Slider } from '@mui/material';
 import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
@@ -9,6 +9,8 @@ import Draggable from 'react-draggable';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
+
+const NUM_SLIDERS = 30;
 
 const darkTheme = createTheme({
   palette: {
@@ -157,6 +159,69 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
   </Grid>
 );
 
+const MemoizedDialogContent = React.memo(({
+  directionSliders, 
+  setDirectionSliders, 
+  allDirections, 
+  direction,
+  selectedType,
+  selectedHead,
+  username,
+}) => {
+
+  const [dialogDirectionName, setDialogDirectionName] = useState("");
+  const [dialogDirectionDescription, setDialogDirectionDescription] = useState("");
+
+  const handleDirectionNameChange = useCallback((event) => {
+    setDialogDirectionName(event.target.value);
+  }, []);
+  
+  const handleDirectionDescriptionChange = useCallback((event) => {
+    setDialogDirectionDescription(event.target.value);
+  }, []);
+
+  const handleSaveDirection = async () => {
+    try {
+      const response = await axios.post("http://127.0.0.1:5000/api/directions", {
+        json: {
+          model_name: "gpt2-small",
+          type: selectedType,
+          head: selectedHead,
+          direction: direction.direction,
+          username: username,
+          direction_name: dialogDirectionName,
+          direction_description: dialogDirectionDescription,
+        }
+      }); 
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+
+  return (
+    <DialogContent dividers={true} style={{height: '300px'}}>
+      <Grid container spacing={3} justify="center">
+        <Grid item>
+          {/* Give your direction a name */}
+          <TextField label="Direction name" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth value={dialogDirectionName} onChange={e => setDialogDirectionName(e.target.value)}/>
+        </Grid>
+        <Grid item>
+          {/* Give your direction a description */}
+          <TextField label="Direction description" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth multiline value={dialogDirectionDescription} onChange={e => setDialogDirectionDescription(e.target.value)}/>
+        </Grid>
+        <Grid item>
+          {/* Save your direction */}
+          <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>Save Direction</Button>
+        </Grid>
+        <Grid item>
+          <SlidersArray sliders={directionSliders} setSliders={setDirectionSliders} directions={allDirections}/>
+        </Grid>
+      </Grid>
+    </DialogContent>
+  )
+})
+
 const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
   const { dotProduct } = resid;
   const normalizedDotProduct = (dotProduct - minDotProduct) / (maxDotProduct - minDotProduct);
@@ -187,9 +252,7 @@ const App = () => {
   const [allDirections, setAllDirections] = useState([]);
   const [maxDotProduct, setMaxDotProduct] = useState(1);
   const [minDotProduct, setMinDotProduct] = useState(-1);
-  const [directionSliders, setDirectionSliders] = useState(Array(30).fill(0));
-  const [dialogDirectionName, setDialogDirectionName] = useState("");
-  const [dialogDirectionDescription, setDialogDirectionDescription] = useState("");
+  const [directionSliders, setDirectionSliders] = useState(Array(NUM_SLIDERS).fill(0));
 
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
@@ -201,7 +264,7 @@ const App = () => {
   };
 
   const handleOpenDirectionSliderDialog = () => {
-    let newSliders = Array(30).fill(0);
+    let newSliders = Array(NUM_SLIDERS).fill(0);
     newSliders[selectedComponentIndex] = 1;
     setDirectionSliders(newSliders);
     setDirectionSliderDialogOpen(true);
@@ -234,7 +297,7 @@ const App = () => {
     if (!direction?.direction?.length) return null;
     console.log('All directions: ', allDirections)
     let newDirection = Array(direction?.direction?.length).fill(0);
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < NUM_SLIDERS; i++) {
       for (let j = 0; j < direction?.direction?.length; j++) {
         newDirection[j] += directionSliders[i] * allDirections[i]?.direction?.[j];
       }
@@ -332,24 +395,6 @@ const App = () => {
 
     fetchAllDirections();
   };
-
-  const handleSaveDirection = async () => {
-    try {
-      const response = await axios.post("http://127.0.0.1:5000/api/directions", {
-        json: {
-          model_name: "gpt2-small",
-          type: selectedType,
-          head: selectedHead,
-          direction: direction.direction,
-          username: username,
-          direction_name: dialogDirectionName,
-          direction_description: dialogDirectionDescription,
-        }
-      }); 
-    } catch (error) {
-      console.error(error);
-    }
-  }
 
   useEffect(() => {
     fetchResidsAndDirection();
@@ -459,25 +504,15 @@ const App = () => {
               <DraggableDialogTitle id="draggable-dialog-title">
                 Find a new direction
               </DraggableDialogTitle>
-              <DialogContent dividers={true} style={{height: '300px'}}>
-                <Grid container spacing={3} justify="center">
-                  <Grid item>
-                    {/* Give your direction a name */}
-                    <TextField label="Direction name" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth value={dialogDirectionName} onChange={e => setDialogDirectionName(e.target.value)}/>
-                  </Grid>
-                  <Grid item>
-                    {/* Give your direction a description */}
-                    <TextField label="Direction description" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth multiline value={dialogDirectionDescription} onChange={e => setDialogDirectionDescription(e.target.value)}/>
-                  </Grid>
-                  <Grid item>
-                    {/* Save your direction */}
-                    <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>Save Direction</Button>
-                  </Grid>
-                  <Grid item>
-                    <SlidersArray sliders={directionSliders} setSliders={setDirectionSliders} directions={allDirections}/>
-                  </Grid>
-                </Grid>
-              </DialogContent>
+              <MemoizedDialogContent 
+                directionSliders={directionSliders} 
+                setDirectionSliders={setDirectionSliders} 
+                allDirections={allDirections}  
+                direction={direction}
+                selectedType={selectedType}
+                selectedHead={selectedHead}
+                username={username}
+              />
             </Paper>
           </Draggable>
         </Dialog>
