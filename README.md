@@ -46,7 +46,7 @@ To run the frontend, install `npm`, then, from the `client/` directory, run:
 
 To populate the backend with prompts/resids/PCA directions, run the following from the `server/` directory:
 
-`python prompt_writer.py 0 100`
+`python prompt_writer.py 0 20`
 
 `python resid_writer.py`
 
