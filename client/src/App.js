@@ -164,7 +164,7 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
 );
 
 const DirectionInfo = ({ direction }) => {
-  if (!direction) return null;
+  if (!direction?.id) return null;
   const directionName = direction?.name || `PCA component ${direction?.componentIndex}`;
   const percentVariance = direction?.fractionOfVarianceExplained ? Math.round(direction.fractionOfVarianceExplained * 10000) / 100 : null;
   return (
@@ -172,7 +172,7 @@ const DirectionInfo = ({ direction }) => {
       <Grid container direction="column" spacing={2}>
         <Grid item xs={12}>
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-            {`Currently showing Direction: ${directionName}`}
+            {`Direction: ${directionName}`}
           </Typography>
         </Grid>
         {percentVariance !== null ? <Grid item xs={12}>
@@ -198,6 +198,8 @@ const MemoizedDialogContent = React.memo(({
 
   const [dialogDirectionName, setDialogDirectionName] = useState("");
   const [dialogDirectionDescription, setDialogDirectionDescription] = useState("");
+  const [saving, setSaving] = useState(false);
+
 
   const handleDirectionNameChange = useCallback((event) => {
     setDialogDirectionName(event.target.value);
@@ -209,6 +211,7 @@ const MemoizedDialogContent = React.memo(({
 
   const handleSaveDirection = async () => {
     try {
+      setSaving(true);
       const response = await axios.post("http://127.0.0.1:5000/api/directions", {
         model_name: "gpt2-small",
         type: selectedType,
@@ -218,6 +221,7 @@ const MemoizedDialogContent = React.memo(({
         direction_name: dialogDirectionName,
         direction_description: dialogDirectionDescription,
       }); 
+      setSaving(false);
     } catch (error) {
       console.error(error);
     }
@@ -237,7 +241,7 @@ const MemoizedDialogContent = React.memo(({
         </Grid>
         <Grid item>
           {/* Save your direction */}
-          <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>Save Direction</Button>
+          <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>{saving ? 'Saving...' : 'Save Direction'}</Button>
         </Grid>
         <Grid item>
           <SlidersArray sliders={directionSliders} setSliders={setDirectionSliders} directions={allDirections}/>
@@ -266,6 +270,61 @@ const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
     {resids.map((resid) => <ColoredResidBox key={resid.id} resid={resid} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />)}
   </Box>
 );
+
+const DirectionDescriptionField = ({direction}) => {
+  const [description, setDescription] = useState(direction?.description || "");
+
+  const handleDescriptionChange = useCallback((event) => {
+    setDescription(event.target.value);
+  }, []);
+
+  const handleSaveDescription = async () => {
+    try {
+      const response = await axios.post(`http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (!direction?.id) return null;
+
+  return (
+    <>
+      <Grid container direction="column" spacing={1}>
+        <Grid item>
+          <TextField 
+            label="Describe this direction!" 
+            variant="outlined" 
+            size="medium"
+            InputProps={{
+              style: {fontSize: "12px"}
+            }}
+            InputLabelProps={{
+              style: {fontSize: "12px"}
+            }}
+            style={{
+              borderRadius: '5px'
+            }} 
+            fullWidth 
+            multiline 
+            rows={6} // increase the number of rows to increase height
+            value={description} 
+            onChange={handleDescriptionChange}
+          />
+        </Grid>
+        <Grid item>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSaveDescription}
+          >
+            Submit
+          </Button>
+        </Grid>
+      </Grid>
+    </>
+  )
+}
 
 const App = () => {
   const [directionSliderDialogOpen, setDirectionSliderDialogOpen] = useState(false);
@@ -550,7 +609,14 @@ const App = () => {
           <LoadingIndicator />
           <br />
         </>}
-        <DirectionInfo direction={direction}/>
+        <Grid container spacing={2}>
+          <Grid item>
+            <DirectionInfo direction={direction}/>
+          </Grid>
+          <Grid item xs={24}>
+            <DirectionDescriptionField direction={direction}/>
+          </Grid>
+        </Grid>
         <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>

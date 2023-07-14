@@ -15,7 +15,7 @@ from direction_description import DirectionDescription
 from settings import DATABASE_URL
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 
 def parse_optional_int(val):
@@ -206,6 +206,100 @@ def create_direction():
     sess.commit()
 
     return jsonify(direction_obj.to_json())
+
+
+@app.route('/api/directions/<direction_id>/descriptions', methods=['GET'])
+def get_direction_descriptions(direction_id):
+    sess = SessionLocal()
+
+    direction_descriptions = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.direction_id == direction_id)
+        .all()
+    )
+
+    username = request.args.get('username')
+    direction_id = request.args.get('direction_id')
+
+    direction = (
+        sess.query(Direction).get(direction_id)
+    )
+
+    if not direction:
+        return jsonify(None)
+
+    user: Optional[User] = None
+    if username:
+        user = add_or_get_user(sess, username)
+
+    my_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.user == user)
+        .filter(DirectionDescription.direction == direction)
+        .one_or_none()
+    )
+
+    best_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.direction == direction)
+        .order_by(DirectionDescription.upvotes.desc())
+        .first()
+    )
+
+    return jsonify({
+        **direction.to_json(), 
+        **({'myDescription': my_direction_description.description} if my_direction_description else {}),
+        **({'bestDescription': best_direction_description.description} if best_direction_description else {}),
+    })
+
+
+@app.route('/api/directions/<direction_id>/descriptions', methods=['POST'])
+def create_direction_description(direction_id):
+    sess = SessionLocal()
+
+    # Get the JSON data from the request
+    data = request.get_json()
+    username = data['username']
+    direction_description = data['direction_description']
+
+    direction = (
+        sess.query(Direction).get(direction_id)
+    )
+
+    if not direction:
+        return jsonify(None)
+
+    user = add_or_get_user(sess, username)
+
+    sess.add(DirectionDescription(
+        direction=direction,
+        user=user,
+        description=direction_description,
+    ))
+
+    sess.commit()
+
+    return jsonify(direction.to_json())
+
+
+@app.route('/api/descriptions/<direction_description_id>/upvote', methods=['POST'])
+def upvote_direction(direction_description_id):
+    sess = SessionLocal()
+
+    direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.id == direction_description_id)
+        .one_or_none()
+    )
+
+    if direction_description is None:
+        return jsonify(None)
+
+    direction_description.upvotes += 1  # type: ignore
+
+    sess.commit()
+
+    return jsonify(direction_description.to_json())
 
 
 if __name__ == '__main__':
