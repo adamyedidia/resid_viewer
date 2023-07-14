@@ -22,6 +22,8 @@ From within the PSQL shell that you just opened, run:
 
 Do CTRL-D to leave the shell.
 
+Create an empty file called `local_settings.py` in the `server/` directory.
+
 Then run:
 
 `alembic upgrade head`
@@ -35,8 +37,6 @@ Also, you'll need to install alembic:
 You'll also need to install TransformerLens:
 
 `pip install git+https://github.com/neelnanda-io/TransformerLens`
-
-Finally, create an empty file called `local_settings.py` in the `server/` directory.
 
 To run the frontend, install `npm`, then, from the `client/` directory, run:
 
