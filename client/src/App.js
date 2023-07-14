@@ -218,7 +218,7 @@ const DirectionInfo = ({ direction }) => {
             </Grid> : null}
             {direction?.bestDescription ? <Grid item xs={12}>
               <Typography variant="body1">
-                {`Highest-rated description: ${direction.bestDescription}}`}
+                {`Highest-rated description: ${direction.bestDescription}`}
               </Typography>
             </Grid> : null}
           </Grid>

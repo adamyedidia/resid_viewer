@@ -180,6 +180,25 @@ def get_all_directions(sess):
     return jsonify([direction.to_json() for direction in directions])
 
 
+@app.route('/api/my_directions', methods=['GET'])
+@sess_decorator
+def get_my_directions(sess):
+    username = request.args.get('username')
+
+    if not username:
+        return jsonify([])
+
+    user = add_or_get_user(sess, username)
+
+    directions = (
+        sess.query(Direction)
+        .filter(Direction.user == user)
+        .all()
+    )
+
+    return jsonify([direction.to_json() for direction in directions])
+
+
 @app.route('/api/directions', methods=['POST'])
 @sess_decorator
 def create_direction(sess):
