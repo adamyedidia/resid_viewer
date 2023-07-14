@@ -214,6 +214,7 @@ const MemoizedDialogContent = React.memo(({
   selectedType,
   selectedHead,
   username,
+  setDirection,
 }) => {
 
   const [dialogDirectionName, setDialogDirectionName] = useState("");
@@ -232,7 +233,7 @@ const MemoizedDialogContent = React.memo(({
   const handleSaveDirection = async () => {
     try {
       setSaving(true);
-      const response = callApi("POST", "http://127.0.0.1:5000/api/directions", {
+      const response = await callApi("POST", "http://127.0.0.1:5000/api/directions", {
         model_name: "gpt2-small",
         type: selectedType,
         head: selectedHead,
@@ -242,6 +243,7 @@ const MemoizedDialogContent = React.memo(({
         direction_description: dialogDirectionDescription,
       })
       setSaving(false);
+      setDirection(response.data);
     } catch (error) {
       console.error(error);
     }
@@ -261,7 +263,7 @@ const MemoizedDialogContent = React.memo(({
         </Grid>
         <Grid item>
           {/* Save your direction */}
-          <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>{saving ? 'Saving...' : 'Save Direction'}</Button>
+          <Button variant="outlined" onClick={() => handleSaveDirection('direction name', 'direction description')}>{'Save Direction'}</Button>
         </Grid>
         <Grid item>
           <SlidersArray sliders={directionSliders} setSliders={setDirectionSliders} directions={allDirections}/>
@@ -300,7 +302,7 @@ const DirectionDescriptionField = ({direction, username}) => {
 
   const handleSaveDescription = async () => {
     try {
-      callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
+      await callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
         direction_description: description,
         username: username,
       });
@@ -361,6 +363,8 @@ const App = () => {
   const [minDotProduct, setMinDotProduct] = useState(-1);
   const [directionSliders, setDirectionSliders] = useState(Array(NUM_SLIDERS).fill(0));
   const [loadingResids, setLoadingResids] = useState(false);
+
+  console.log(direction);
 
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
@@ -624,6 +628,7 @@ const App = () => {
                 selectedType={selectedType}
                 selectedHead={selectedHead}
                 username={username}
+                setDirection={setDirection}
               />
             </Paper>
           </Draggable>

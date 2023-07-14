@@ -218,7 +218,10 @@ def create_direction(sess):
 
     sess.commit()
 
-    return jsonify(direction_obj.to_json())
+    return jsonify({
+        **direction_obj.to_json(),
+        'myDescription': direction_description,
+    })
 
 
 @app.route('/api/directions/<direction_id>/descriptions', methods=['GET'])

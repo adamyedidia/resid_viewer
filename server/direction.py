@@ -56,6 +56,7 @@ class Direction(Base):
             'type': self.type,
             'componentIndex': self.component_index,
             'fractionOfVarianceExplained': self.fraction_of_variance_explained,
+            'name': self.name,
         }
     
 
