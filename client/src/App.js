@@ -9,6 +9,8 @@ import Draggable from 'react-draggable';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const NUM_SLIDERS = 30;
 
@@ -34,6 +36,24 @@ const darkTheme = createTheme({
     },
   },
 });
+
+const callApi = async (method, url, data = null) => {
+  let response;
+  try {
+    if (method === 'POST') {
+      response = await axios.post(url, data);
+      toast.success('Success!');
+    } else if (method === 'DELETE') {
+      response = await axios.delete(url);
+      toast.success('Success!');
+    }
+  } catch (error) {
+    toast.error(`API request failed: ${error}`);
+    console.error(error);
+  } 
+
+  return response;
+};
 
 function LoadingIndicator() {
   return <h2>Loading...</h2>;
@@ -212,7 +232,7 @@ const MemoizedDialogContent = React.memo(({
   const handleSaveDirection = async () => {
     try {
       setSaving(true);
-      const response = await axios.post("http://127.0.0.1:5000/api/directions", {
+      const response = callApi("POST", "http://127.0.0.1:5000/api/directions", {
         model_name: "gpt2-small",
         type: selectedType,
         head: selectedHead,
@@ -220,7 +240,7 @@ const MemoizedDialogContent = React.memo(({
         username: username,
         direction_name: dialogDirectionName,
         direction_description: dialogDirectionDescription,
-      }); 
+      })
       setSaving(false);
     } catch (error) {
       console.error(error);
@@ -271,7 +291,7 @@ const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
   </Box>
 );
 
-const DirectionDescriptionField = ({direction}) => {
+const DirectionDescriptionField = ({direction, username}) => {
   const [description, setDescription] = useState(direction?.description || "");
 
   const handleDescriptionChange = useCallback((event) => {
@@ -280,7 +300,10 @@ const DirectionDescriptionField = ({direction}) => {
 
   const handleSaveDescription = async () => {
     try {
-      const response = await axios.post(`http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`);
+      callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
+        direction_description: description,
+        username: username,
+      });
     } catch (error) {
       console.error(error);
     }
@@ -297,10 +320,10 @@ const DirectionDescriptionField = ({direction}) => {
             variant="outlined" 
             size="medium"
             InputProps={{
-              style: {fontSize: "12px"}
+              style: {fontSize: "14px"}
             }}
             InputLabelProps={{
-              style: {fontSize: "12px"}
+              style: {fontSize: "14px"}
             }}
             style={{
               borderRadius: '5px'
@@ -545,6 +568,7 @@ const App = () => {
   return (
     <ThemeProvider theme={darkTheme}>
       <div style={appStyle}>
+        <ToastContainer />
         <Grid container spacing={3} justify="center">
           <TypeSelector
             types={types}
@@ -613,10 +637,11 @@ const App = () => {
           <Grid item>
             <DirectionInfo direction={direction}/>
           </Grid>
-          <Grid item xs={24}>
-            <DirectionDescriptionField direction={direction}/>
+          <Grid item xs={18}>
+            <DirectionDescriptionField direction={direction} username={username}/>
           </Grid>
         </Grid>
+        <br />
         <Grid container spacing={1}>
           {Object.entries(groupedResids).map(([promptId, resids]) => (
             <Grid item xs={12} key={promptId}>
