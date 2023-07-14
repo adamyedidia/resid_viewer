@@ -37,23 +37,32 @@ const darkTheme = createTheme({
   },
 });
 
-const callApi = async (method, url, data = null) => {
-  let response;
-  try {
-    if (method === 'POST') {
-      response = await axios.post(url, data);
-      toast.success('Success!');
-    } else if (method === 'DELETE') {
-      response = await axios.delete(url);
-      toast.success('Success!');
-    }
-  } catch (error) {
-    toast.error(`API request failed: ${error}`);
-    console.error(error);
-  } 
+export async function callApi(method, url, data = null, startMessage = null, endMessage = 'Success!') {
+  if (startMessage) {
+    toast(startMessage);
+  }
 
-  return response;
-};
+  const response = await fetch(url, {
+    method,
+    body: data ? JSON.stringify(data) : null,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (response.status >= 400 && response.status < 600) {
+    const errorData = await response.json();
+    toast.error(`An error occurred: ${errorData.error}`);
+    throw new Error(`HTTP Error: ${response.status}`);
+  }
+
+  if (endMessage) {
+    toast(endMessage);
+  }
+
+  const result = await response.json();
+  return result;
+}
 
 function LoadingIndicator() {
   return <h2>Loading...</h2>;
@@ -200,6 +209,20 @@ const DirectionInfo = ({ direction }) => {
             {`This direction explains ${percentVariance} percent of the variance`}
           </Typography>
         </Grid> : null}
+        <Grid item xs={24}>
+          <Grid container direction="row" spacing={3}>
+            {direction?.myDescription ? <Grid item xs={12}>
+              <Typography variant="body1">
+                {`Your description: ${direction.myDescription}`}
+              </Typography>
+            </Grid> : null}
+            {direction?.bestDescription ? <Grid item xs={12}>
+              <Typography variant="body1">
+                {`Highest-rated description: ${direction.bestDescription}}`}
+              </Typography>
+            </Grid> : null}
+          </Grid>
+        </Grid>
       </Grid>
       <br/>
     </>
@@ -220,7 +243,6 @@ const MemoizedDialogContent = React.memo(({
   const [dialogDirectionName, setDialogDirectionName] = useState("");
   const [dialogDirectionDescription, setDialogDirectionDescription] = useState("");
   const [saving, setSaving] = useState(false);
-
 
   const handleDirectionNameChange = useCallback((event) => {
     setDialogDirectionName(event.target.value);
@@ -243,7 +265,7 @@ const MemoizedDialogContent = React.memo(({
         direction_description: dialogDirectionDescription,
       })
       setSaving(false);
-      setDirection(response.data);
+      setDirection(response);
     } catch (error) {
       console.error(error);
     }

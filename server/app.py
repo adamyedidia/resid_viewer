@@ -195,6 +195,9 @@ def create_direction(sess):
 
     user = add_or_get_user(sess, username)
 
+    if sess.query(Direction).filter_by(name=direction_name).count() > 0:
+        return jsonify({'error': 'Direction with that name already exists'}), 400
+
     direction_obj = add_direction(
         sess=sess,
         direction=direction,
