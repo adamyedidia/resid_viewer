@@ -43,6 +43,7 @@ def parse_optional_int(val):
 
 
 @app.route('/api/resids', methods=['GET'])
+@sess_decorator
 def get_resids(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
@@ -90,6 +91,7 @@ def get_resids(sess):
 
 
 @app.route('/api/directions', methods=['GET'])
+@sess_decorator
 def get_pca_direction(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
@@ -147,6 +149,7 @@ def get_pca_direction(sess):
 
 
 @app.route('/api/all_directions', methods=['GET'])
+@sess_decorator
 def get_all_directions(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
@@ -178,6 +181,7 @@ def get_all_directions(sess):
 
 
 @app.route('/api/directions', methods=['POST'])
+@sess_decorator
 def create_direction(sess):
     # Get the JSON data from the request
     data = request.get_json()
@@ -218,6 +222,7 @@ def create_direction(sess):
 
 
 @app.route('/api/directions/<direction_id>/descriptions', methods=['GET'])
+@sess_decorator
 def get_direction_descriptions(direction_id, sess):
     username = request.args.get('username')
     direction_id = request.args.get('direction_id')
@@ -255,6 +260,7 @@ def get_direction_descriptions(direction_id, sess):
 
 
 @app.route('/api/directions/<direction_id>/descriptions', methods=['POST'])
+@sess_decorator
 def create_direction_description(direction_id, sess):
     # Get the JSON data from the request
     data = request.get_json()
@@ -282,6 +288,7 @@ def create_direction_description(direction_id, sess):
 
 
 @app.route('/api/descriptions/<direction_description_id>/upvote', methods=['POST'])
+@sess_decorator
 def upvote_direction(direction_description_id, sess):
     direction_description = (
         sess.query(DirectionDescription)
