@@ -53,3 +53,9 @@ To populate the backend with prompts/resids/PCA directions, run the following fr
 `python direction_writer.py`
 
 If you want a larger number of prompts in the mix (which will ultimately give more accurate PCA directions), you can increase that 20 to an 100 or an 1000 or a 10000, but then it'll take longer to run.
+
+To run the backend, you'll want to run 
+
+`python app.py`
+
+If you are running both the backend and frontend simultaneously, and you've populated the database, then hopefully everything should work.
