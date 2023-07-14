@@ -1,3 +1,4 @@
+from functools import wraps
 from typing import Optional
 from flask import Flask, request, jsonify
 import numpy as np
@@ -18,6 +19,22 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 
 
+def sess_decorator(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        with SessionLocal() as sess:
+            kwargs['sess'] = sess
+            try:
+                response = f(*args, **kwargs)
+            except Exception as e:
+                sess.rollback()
+                return jsonify({'error': str(e)}), 500
+            finally:
+                sess.close()
+        return response
+    return decorated_function
+
+
 def parse_optional_int(val):
     try:
         return int(val)
@@ -26,9 +43,7 @@ def parse_optional_int(val):
 
 
 @app.route('/api/resids', methods=['GET'])
-def get_resids():
-    sess = SessionLocal()
-
+def get_resids(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
     head = parse_optional_int(request.args.get('head'))
@@ -75,9 +90,7 @@ def get_resids():
 
 
 @app.route('/api/directions', methods=['GET'])
-def get_pca_direction():
-    sess = SessionLocal()
-
+def get_pca_direction(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
     head = parse_optional_int(request.args.get('head'))
@@ -134,9 +147,7 @@ def get_pca_direction():
 
 
 @app.route('/api/all_directions', methods=['GET'])
-def get_all_directions():
-    sess = SessionLocal()
-
+def get_all_directions(sess):
     model_name = request.args.get('model_name')
     type = request.args.get('type')
     head = parse_optional_int(request.args.get('head'))
@@ -167,9 +178,7 @@ def get_all_directions():
 
 
 @app.route('/api/directions', methods=['POST'])
-def create_direction():
-    sess = SessionLocal()
-
+def create_direction(sess):
     # Get the JSON data from the request
     data = request.get_json()
     model_name = data['model_name']
@@ -209,15 +218,7 @@ def create_direction():
 
 
 @app.route('/api/directions/<direction_id>/descriptions', methods=['GET'])
-def get_direction_descriptions(direction_id):
-    sess = SessionLocal()
-
-    direction_descriptions = (
-        sess.query(DirectionDescription)
-        .filter(DirectionDescription.direction_id == direction_id)
-        .all()
-    )
-
+def get_direction_descriptions(direction_id, sess):
     username = request.args.get('username')
     direction_id = request.args.get('direction_id')
 
@@ -254,9 +255,7 @@ def get_direction_descriptions(direction_id):
 
 
 @app.route('/api/directions/<direction_id>/descriptions', methods=['POST'])
-def create_direction_description(direction_id):
-    sess = SessionLocal()
-
+def create_direction_description(direction_id, sess):
     # Get the JSON data from the request
     data = request.get_json()
     username = data['username']
@@ -283,9 +282,7 @@ def create_direction_description(direction_id):
 
 
 @app.route('/api/descriptions/<direction_description_id>/upvote', methods=['POST'])
-def upvote_direction(direction_description_id):
-    sess = SessionLocal()
-
+def upvote_direction(direction_description_id, sess):
     direction_description = (
         sess.query(DirectionDescription)
         .filter(DirectionDescription.id == direction_description_id)
