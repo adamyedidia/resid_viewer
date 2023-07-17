@@ -313,6 +313,8 @@ const MemoizedDialogContent = React.memo(({
         direction_description: dialogDirectionDescription,
       })
       setSaving(false);
+      console.log(response);
+      console.log(myDirections);
       setDirection(response);
       setMyDirections([...myDirections, response]);
     } catch (error) {
@@ -724,6 +726,8 @@ const App = () => {
                 selectedHead={selectedHead}
                 username={username}
                 setDirection={setDirection}
+                myDirections={myDirections}
+                setMyDirections={setMyDirections}
               />
             </Paper>
           </Draggable>
