@@ -35,9 +35,12 @@ class Direction(Base):
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
+    deleted = Column(DateTime, nullable=False, server_default='f')
+
     __table_args__ = (
         Index("idx_generated_by_process_created_at", "generated_by_process", "created_at"),
         Index("idx_directions_model_layer_type_created_at", "model_id", "layer", "type", "head", "component_index", "created_at"),
+        Index("idx_directions_user_deleted_created_at", "user_id", "deleted", "created_at"),
     )
 
     @property

@@ -11,6 +11,7 @@ import DialogContent from '@mui/material/DialogContent';
 import Dialog from '@mui/material/Dialog';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaTrash } from 'react-icons/fa';
 
 const NUM_SLIDERS = 30;
 
@@ -191,6 +192,51 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
     </FormControl>
   </Grid>
 );
+
+const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirections, debouncedUsername }) => {  
+  useEffect(() => {
+    const fetchData = async () => {
+      const result = await axios.get("http://127.0.0.1:5000/api/my_directions", {params: {username: debouncedUsername}});
+      setMyDirections(result.data);
+    };
+    
+    fetchData();
+  }, [debouncedUsername]); // Empty dependency array means this effect runs once on mount
+  
+  const handleDelete = async (id) => {
+    await callApi('DELETE', `http://127.0.0.1:5000/api/directions/${id}`);
+    setMyDirections(myDirections.filter(direction => direction.id !== id));
+  };
+
+  console.log(myDirections);
+  if (!myDirections) return null;
+
+  return (
+    <div>
+      <h2>My Directions</h2>
+      <div style={{ height: '300px', overflowY: 'auto' }}>
+        {myDirections.map((dir) => (
+          <div
+            key={dir.id}
+            onClick={() => setDirection(dir)}
+            style={{
+              border: dir.id === direction.id ? '1px solid blue' : 'none',
+              padding: '10px',
+              margin: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}
+          >
+            <span>{dir.name}</span>
+            <FaTrash onClick={() => handleDelete(dir.id)} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 
 const DirectionInfo = ({ direction }) => {
   if (!direction?.id) return null;
@@ -385,6 +431,11 @@ const App = () => {
   const [minDotProduct, setMinDotProduct] = useState(-1);
   const [directionSliders, setDirectionSliders] = useState(Array(NUM_SLIDERS).fill(0));
   const [loadingResids, setLoadingResids] = useState(false);
+  const [myDirections, setMyDirections] = useState([]);
+
+  const typeShape = gpt2_types[selectedType];
+
+  const needsHead = !!typeShape?.includes(12);
 
   console.log(direction);
 
@@ -467,7 +518,7 @@ const App = () => {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
-          head: selectedHead,
+          head: needsHead ? selectedHead : null,
         },
       });
       console.log(response.data)
@@ -497,7 +548,7 @@ const App = () => {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
-          head: selectedHead,
+          head: needsHead ? selectedHead : null,
           component_index: selectedComponentIndex,
         },
       });
@@ -581,9 +632,6 @@ const App = () => {
     .filter((type => !type.includes("hook_attn_scores")))
     .filter((type => !type.includes("hook_pattern")))
   );
-  const typeShape = gpt2_types[selectedType];
-
-  const needsHead = !!typeShape?.includes(12);
   const maxComponentIndex = (
     typeShape?.includes(64) ? 64 : 
     typeShape?.includes(768) ? 768 :
@@ -601,7 +649,6 @@ const App = () => {
             selectedType={selectedType}
             onTypeChange={(type) => setSelectedType(type)}
           />
-
           {needsHead && (
             <IndexSelector
               range={12}
@@ -619,6 +666,15 @@ const App = () => {
               label='Component Index'
             />
           )}
+          <Grid item>
+            <MyDirectionsWidget 
+              direction={direction} 
+              setDirection={setDirection} 
+              myDirections={myDirections}
+              setMyDirections={setMyDirections}
+              debouncedUsername={debouncedUsername}
+            />
+          </Grid>
           <Grid item xs={12} md={6}>
             <TextField value={username} label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth onChange={handleUsernameChange}/>
           </Grid>

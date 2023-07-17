@@ -28,7 +28,7 @@ def sess_decorator(f):
                 response = f(*args, **kwargs)
             except Exception as e:
                 sess.rollback()
-                return jsonify({'error': str(e)}), 500
+                raise e
             finally:
                 sess.close()
         return response
@@ -38,7 +38,7 @@ def sess_decorator(f):
 def parse_optional_int(val):
     try:
         return int(val)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
 
 
@@ -156,6 +156,8 @@ def get_all_directions(sess):
     head = parse_optional_int(request.args.get('head'))
 
     print(type)
+    print(head)
+    print(model_name)
 
     if not type:
         return jsonify([])
@@ -193,10 +195,31 @@ def get_my_directions(sess):
     directions = (
         sess.query(Direction)
         .filter(Direction.user == user)
+        .filter(~Direction.deleted)
+        .order_by(Direction.created_at.desc())
+        .limit(1000)
         .all()
     )
 
     return jsonify([direction.to_json() for direction in directions])
+
+
+@app.route('/api/directions/<direction_id>', methods=['DELETE'])
+@sess_decorator
+def delete_direction(direction_id, sess):
+    direction = (
+        sess.query(Direction)
+        .filter(Direction.id == direction_id)
+        .one_or_none()
+    )
+
+    if direction is None:
+        return jsonify({'error': 'Direction not found'}), 404
+
+    direction.deleted = True
+    sess.commit()
+
+    return jsonify({'success': True})
 
 
 @app.route('/api/directions', methods=['POST'])
