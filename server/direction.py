@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, and_, exists, func
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, and_, exists, func
 from database import Base
 from sqlalchemy.orm import relationship
 import numpy as np
@@ -35,7 +35,7 @@ class Direction(Base):
 
     created_at = Column(DateTime, nullable=False, server_default=func.now(), index=True)
 
-    deleted = Column(DateTime, nullable=False, server_default='f')
+    deleted = Column(Boolean, nullable=False, server_default='f')
 
     __table_args__ = (
         Index("idx_generated_by_process_created_at", "generated_by_process", "created_at"),

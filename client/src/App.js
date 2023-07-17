@@ -284,6 +284,8 @@ const MemoizedDialogContent = React.memo(({
   selectedHead,
   username,
   setDirection,
+  myDirections,
+  setMyDirections
 }) => {
 
   const [dialogDirectionName, setDialogDirectionName] = useState("");
@@ -312,6 +314,7 @@ const MemoizedDialogContent = React.memo(({
       })
       setSaving(false);
       setDirection(response);
+      setMyDirections([...myDirections, response]);
     } catch (error) {
       console.error(error);
     }
@@ -437,7 +440,8 @@ const App = () => {
 
   const needsHead = !!typeShape?.includes(12);
 
-  console.log(direction);
+  console.log('Resids:', resids);
+  console.log('Direction:', direction);
 
   // Store the user's username in local storage
   const [username, setUsername] = useState(localStorage.getItem('username') || '');
@@ -542,6 +546,7 @@ const App = () => {
           component_index: selectedComponentIndex,
         },
       });
+      console.log('Got resid response:', residResponse)
       const newResids = residResponse.data;
 
       const directionResponse = await axios.get("http://127.0.0.1:5000/api/directions", {
@@ -552,6 +557,7 @@ const App = () => {
           component_index: selectedComponentIndex,
         },
       });
+      console.log('Got direction response:', directionResponse)
       const newDirection = directionResponse.data;
       calculateDotProducts(newResids, newDirection);
       setLoadingResids(false);
@@ -559,6 +565,7 @@ const App = () => {
       setDirection(newDirection);
     } catch (error) {
       console.error(error);
+      setLoadingResids(false);
     }
     fetchAllDirections();
   };
