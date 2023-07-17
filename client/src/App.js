@@ -364,6 +364,16 @@ const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
   </Box>
 );
 
+const PromptTable = React.memo(({ groupedResids, maxDotProduct, minDotProduct }) => (
+    <Grid container spacing={1}>
+      {Object.entries(groupedResids).map(([promptId, resids]) => (
+        <Grid item xs={12} key={promptId}>
+          <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
+        </Grid>
+      ))}
+    </Grid>
+  ));
+
 const DirectionDescriptionField = ({direction, username}) => {
   const [description, setDescription] = useState(direction?.description || "");
 
@@ -732,13 +742,7 @@ const App = () => {
           </Grid>
         </Grid>
         <br />
-        <Grid container spacing={1}>
-          {Object.entries(groupedResids).map(([promptId, resids]) => (
-            <Grid item xs={12} key={promptId}>
-              <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
-            </Grid>
-          ))}
-        </Grid>
+        <PromptTable groupedResids={groupedResids} minDotProduct={minDotProduct} maxDotProduct={maxDotProduct} />
       </div>
     </ThemeProvider>
   );
