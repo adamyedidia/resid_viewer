@@ -220,7 +220,7 @@ const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirect
             key={dir.id}
             onClick={() => setDirection(dir)}
             style={{
-              border: dir.id === direction.id ? '1px solid blue' : 'none',
+              border: dir?.id === direction?.id ? '1px solid blue' : 'none',
               padding: '10px',
               margin: '10px',
               display: 'flex',
@@ -593,7 +593,7 @@ const App = () => {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
-          head: selectedHead,
+          head: needsHead ? selectedHead : null,
           component_index: selectedComponentIndex,
         },
       });
