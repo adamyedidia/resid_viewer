@@ -76,6 +76,7 @@ class Resid(Base):
             'promptId': self.prompt.id,
             'decodedToken': self.decoded_token,
             'tokenPosition': self.token_position,
+            'createdAt': self.created_at.timestamp(),
         }
     
 

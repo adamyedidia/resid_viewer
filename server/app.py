@@ -9,8 +9,9 @@ from sqlalchemy import func
 from direction import Direction
 from flask_cors import CORS
 from direction import add_direction
-from utils import get_layer_num_from_resid_type
+from utils import enc, get_layer_num_from_resid_type
 from user import add_or_get_user, User
+from prompt import Prompt
 from direction_description import DirectionDescription
 
 from settings import DATABASE_URL
@@ -49,6 +50,7 @@ def get_resids(sess):
     type = request.args.get('type')
     head = parse_optional_int(request.args.get('head'))
     component_index = request.args.get('component_index')
+    username = request.args.get('username')
 
     if not type:
         return jsonify([])
@@ -59,9 +61,22 @@ def get_resids(sess):
         .one_or_none()
     )
 
-    print(model)
-
     layer = get_layer_num_from_resid_type(type)
+
+    if username:
+        user = add_or_get_user(sess, username)
+
+        my_resid_prompt_ids = (
+            sess.query(Prompt.id)
+            .filter(Prompt.added_by_user_id == user.id)
+            .order_by(Prompt.created_at.desc())
+            .limit(10)
+            .all()
+        )
+    else:
+        my_resid_prompt_ids = set()
+
+    print(my_resid_prompt_ids)
 
     resid_prompt_ids = (
         sess.query(Resid.prompt_id)
@@ -74,7 +89,7 @@ def get_resids(sess):
         .all()
     )
 
-    resid_prompt_ids = {t[0] for t in resid_prompt_ids}
+    resid_prompt_ids = {*{t[0] for t in resid_prompt_ids}, *{t[0] for t in my_resid_prompt_ids}}
 
     resids = (
         sess.query(Resid)
@@ -84,6 +99,7 @@ def get_resids(sess):
         .filter(Resid.head == head)
         .filter(Resid.prompt_id.in_(resid_prompt_ids))
         .filter(Resid.token_position > 0)  # The leading |<endoftext>| token is weird
+        .order_by(Resid.created_at.desc())
         .all()
     )
 
@@ -352,6 +368,53 @@ def upvote_direction(direction_description_id, sess):
     sess.commit()
 
     return jsonify(direction_description.to_json())
+
+
+@app.route('/api/prompts', methods=['POST'])
+@sess_decorator
+def add_prompt(sess):
+    from resid_writer import write_resids_for_prompt
+
+    data = request.get_json()
+    username = data['username']
+    prompt = data['prompt']
+    model_name = data['model_name']
+
+    model = (
+        sess.query(Model)
+        .filter(Model.name == model_name)
+        .one_or_none()
+    )
+
+    if not prompt:
+        return jsonify({'error': 'No prompt text provided'}), 400
+
+    if not model:
+        return jsonify({'error': f'Unrecognized model {model_name}'}, 400)
+
+    if len(prompt) > 10000:
+        return jsonify({'error': 'Prompt too long'}), 400
+
+    user = add_or_get_user(sess, username)
+
+    encoded_text_split_by_token = enc.encode(prompt)
+    text_split_by_token = [enc.decode([token]) for token in encoded_text_split_by_token]
+    length_in_tokens = len(encoded_text_split_by_token)
+
+    prompt_obj = Prompt(
+        text=prompt,
+        added_by_user=user,
+        encoded_text_split_by_token=encoded_text_split_by_token,
+        text_split_by_token=text_split_by_token,
+        length_in_tokens=length_in_tokens,
+    )
+
+    sess.add(prompt_obj)
+    sess.commit()
+
+    write_resids_for_prompt(sess, prompt_obj, model)
+
+    return jsonify({'success': True})
 
 
 if __name__ == '__main__':

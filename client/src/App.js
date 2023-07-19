@@ -368,7 +368,7 @@ const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
 
 const PromptTable = React.memo(({ groupedResids, maxDotProduct, minDotProduct }) => (
     <Grid container spacing={1}>
-      {Object.entries(groupedResids).map(([promptId, resids]) => (
+      {Object.entries(groupedResids).reverse().map(([promptId, resids]) => (
         <Grid item xs={12} key={promptId}>
           <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
         </Grid>
@@ -425,6 +425,65 @@ const DirectionDescriptionField = ({direction, username}) => {
             variant="contained" 
             color="primary" 
             onClick={handleSaveDescription}
+          >
+            Submit
+          </Button>
+        </Grid>
+      </Grid>
+    </>
+  )
+}
+
+const AddYourOwnPromptField = ({username, fetchResidsAndDirection}) => {
+  const [prompt, setPrompt] = useState("");
+
+  const handlePromptChange = useCallback((event) => {
+    setPrompt(event.target.value);
+  }, []);
+
+  const handleSavePrompt = async () => {
+    try {
+      await callApi('POST', `http://127.0.0.1:5000/api/prompts`, {
+        prompt,
+        username,
+        model_name: 'gpt2-small'
+      });
+    } catch (error) {
+      console.error(error);
+    }
+
+    fetchResidsAndDirection();
+  }
+
+  return (
+    <>
+      <Grid container direction="column" spacing={1}>
+        <Grid item>
+          <TextField 
+            label="Submit your own prompt!" 
+            variant="outlined" 
+            size="medium"
+            InputProps={{
+              style: {fontSize: "14px"}
+            }}
+            InputLabelProps={{
+              style: {fontSize: "14px"}
+            }}
+            style={{
+              borderRadius: '5px'
+            }} 
+            fullWidth 
+            multiline 
+            rows={6} // increase the number of rows to increase height
+            value={prompt} 
+            onChange={handlePromptChange}
+          />
+        </Grid>
+        <Grid item>
+          <Button 
+            variant="contained" 
+            color="primary" 
+            onClick={handleSavePrompt}
           >
             Submit
           </Button>
@@ -563,6 +622,7 @@ const App = () => {
           type: selectedType,
           head: selectedHead,
           component_index: selectedComponentIndex,
+          username: username,
         },
       });
       console.log('Got resid response:', residResponse)
@@ -643,7 +703,6 @@ const App = () => {
     (groups[resid.promptId] = groups[resid.promptId] || []).push(resid);
     return groups;
   }, {});
-
 
   const appStyle = {
     backgroundColor: '#1b1b1b',
@@ -731,7 +790,7 @@ const App = () => {
                 direction={direction}
                 selectedType={selectedType}
                 selectedHead={selectedHead}
-                username={username}
+                username={debouncedUsername}
                 setDirection={setDirection}
                 myDirections={myDirections}
                 setMyDirections={setMyDirections}
@@ -749,7 +808,10 @@ const App = () => {
             <DirectionInfo direction={direction}/>
           </Grid>
           <Grid item xs={18}>
-            <DirectionDescriptionField direction={direction} username={username}/>
+            <DirectionDescriptionField direction={direction} username={debouncedUsername}/>
+          </Grid>
+          <Grid item xs={18}>
+            <AddYourOwnPromptField username={debouncedUsername} fetchResidsAndDirection={fetchResidsAndDirection} />
           </Grid>
         </Grid>
         <br />
