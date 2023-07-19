@@ -522,7 +522,10 @@ const App = () => {
     if (!residsToCalculate?.length || !directionToCalculate?.direction) return;
     console.log('calculating dot products')
     const dotProducts = residsToCalculate.map(resid => {
-      const dotProduct = resid.resid.reduce((sum, value, i) => sum + value * directionToCalculate.direction[i], 0);
+      let dotProduct = 0;
+      if (resid.resid.length === directionToCalculate.direction.length) {
+        dotProduct = resid.resid.reduce((sum, value, i) => sum + value * directionToCalculate.direction[i], 0);
+      }
       return {...resid, dotProduct};
     });
     const maxDotProduct = Math.max(...dotProducts.map(({dotProduct}) => dotProduct));
@@ -703,7 +706,7 @@ const App = () => {
           </Grid>
         </Grid>
         <br />
-        {selectedType && (!needsHead || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
+        {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
           <Grid item xs={12} md={6}>
             <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
               Find a new direction
