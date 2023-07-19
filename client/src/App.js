@@ -514,6 +514,10 @@ const App = () => {
     // eslint-disable-next-line
   }, [directionSliders]);
 
+  useEffect(() => {
+    calculateDotProducts(resids, direction);
+  }, [direction?.id])
+
   const calculateDotProducts = (residsToCalculate, directionToCalculate) => {
     if (!residsToCalculate?.length || !directionToCalculate?.direction) return;
     console.log('calculating dot products')
