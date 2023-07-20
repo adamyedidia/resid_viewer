@@ -305,7 +305,8 @@ def get_direction_descriptions(direction_id, sess):
         sess.query(DirectionDescription)
         .filter(DirectionDescription.user == user)
         .filter(DirectionDescription.direction == direction)
-        .one_or_none()
+        .order_by(DirectionDescription.created_at.desc())
+        .first()
     )
 
     best_direction_description = (

@@ -22,7 +22,7 @@ class DirectionDescription(Base):
     __table_args__ = (
         Index("idx_user_upvotes_created_at", "user_id", "upvotes", "created_at"),
         Index("idx_direction_upvotes_created_at", "direction_id", "upvotes", "created_at"),
-        Index("idx_direction_user", "direction_id", "user_id", unique=True),
+        Index("idx_direction_user", "direction_id", "user_id"),
     )
 
     def __repr__(self):
