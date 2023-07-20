@@ -8,6 +8,8 @@ from sklearn.discriminant_analysis import StandardScaler
 from model import Model
 from prompt import Prompt
 from utils import enc
+from transformer import models_dict
+import torch
 
 class Resid(Base):
     __tablename__ = "resids"
@@ -61,6 +63,38 @@ class Resid(Base):
     @property
     def arr(self):
         return np.array(self.resid)
+    
+    @property
+    def torch_tensor(self):
+        return torch.tensor(self.resid).view(1, 1, -1)
+
+    @property
+    def predicted_next_tokens(self) -> Optional[dict]:
+        transformer_obj = models_dict[self.model.name]
+
+        if transformer_obj.cfg.d_model != self.dimension:
+            return None
+        
+        if self.type != 'ln_final.hook_normalized':  # type: ignore
+            normalized_resid_final = transformer_obj.ln_final(self.torch_tensor)
+        else:
+            normalized_resid_final = self.torch_tensor
+        logits = transformer_obj.unembed(normalized_resid_final)
+
+        last_logits = logits[-1, -1]  # type: ignore
+        # # Apply softmax to convert the logits to probabilities
+        probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
+    
+        # Get the indices of the top 10 probabilities
+        topk_indices = np.argpartition(probabilities, -5)[-5:]
+        # Get the top 10 probabilities
+        topk_probabilities = probabilities[topk_indices]
+        # Get the top 10 tokens
+        topk_tokens = [enc.decode([i]) for i in topk_indices]
+
+        # Print the top 10 tokens and their probabilities
+        return {token: float(probability) for token, probability in zip(topk_tokens, topk_probabilities)}
+
 
     def __repr__(self):
         return f"<Resid {self.id}: {np.array(self.resid).shape}>"
@@ -77,6 +111,7 @@ class Resid(Base):
             'decodedToken': self.decoded_token,
             'tokenPosition': self.token_position,
             'createdAt': self.created_at.timestamp(),
+            'predictedNextTokens': self.predicted_next_tokens,
         }
     
 
