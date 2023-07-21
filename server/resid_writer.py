@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 from sqlalchemy import and_, exists
 from server.database import SessionLocal
 from server.model import Model

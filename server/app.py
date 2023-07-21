@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 from functools import wraps
 from typing import Optional
 from flask import Flask, request, jsonify
@@ -13,6 +16,7 @@ from server.utils import enc, get_layer_num_from_resid_type
 from server.user import add_or_get_user, User
 from server.prompt import Prompt
 from server.direction_description import DirectionDescription
+from server.resid_writer import write_resids_for_prompt
 
 from settings import DATABASE_URL
 
@@ -373,8 +377,6 @@ def upvote_direction(direction_description_id, sess):
 @app.route('/api/prompts', methods=['POST'])
 @sess_decorator
 def add_prompt(sess):
-    from resid_writer import write_resids_for_prompt
-
     data = request.get_json()
     username = data['username']
     prompt = data['prompt']

@@ -1,8 +1,10 @@
+import sys
+sys.path.append('..')
+
 from server.prompt import Prompt
 from server.utils import enc
 from server.database import SessionLocal
 import random
-import sys
 
 def split_prompt_by_tokens(encoded_text: list[int], num_tokens: int) -> list[list[int]]:
     # splits the encoded_text into lists each of length num_tokens

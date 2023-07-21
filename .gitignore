@@ -1,3 +1,5 @@
 local_settings.py
 *__pycache__*
 client/node_modules/
+*.png
+.DS_Store

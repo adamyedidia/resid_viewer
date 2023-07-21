@@ -1,7 +1,7 @@
 from typing import Optional
 import tiktoken
 
-from settings import M1_MAC
+from server.settings import M1_MAC
 
 enc = tiktoken.get_encoding('r50k_base')
 

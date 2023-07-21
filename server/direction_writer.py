@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import StandardScaler
 from database import SessionLocal
