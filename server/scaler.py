@@ -1,11 +1,11 @@
 from typing import Optional
 from sklearn.discriminant_analysis import StandardScaler
 from sqlalchemy import Column, DateTime, ForeignKey, and_, exists, func, Index, Integer, ARRAY, Float, String
-from database import Base
+from server.database import Base
 from sqlalchemy.orm import relationship
 import numpy as np
 
-from model import Model
+from server.model import Model
 
 
 # Not a misspelling: this is Scaler as in StandardScaler, not Scalar as in a single value

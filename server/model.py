@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
-from database import Base
+from server.database import Base
 
 class Model(Base):
     __tablename__ = "models"

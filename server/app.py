@@ -2,17 +2,17 @@ from functools import wraps
 from typing import Optional
 from flask import Flask, request, jsonify
 import numpy as np
-from database import SessionLocal
-from model import Model
-from resid import Resid
+from server.database import SessionLocal
+from server.model import Model
+from server.resid import Resid
 from sqlalchemy import func
-from direction import Direction
+from server.direction import Direction
 from flask_cors import CORS
-from direction import add_direction
-from utils import enc, get_layer_num_from_resid_type
-from user import add_or_get_user, User
-from prompt import Prompt
-from direction_description import DirectionDescription
+from server.direction import add_direction
+from server.utils import enc, get_layer_num_from_resid_type
+from server.user import add_or_get_user, User
+from server.prompt import Prompt
+from server.direction_description import DirectionDescription
 
 from settings import DATABASE_URL
 

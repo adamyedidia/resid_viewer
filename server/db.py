@@ -1,7 +1,7 @@
-import model
-import resid
-import user
-import direction
-import direction_description
-import prompt
-import scaler
+import server.model
+import server.resid
+import server.user
+import server.direction
+import server.direction_description
+import server.prompt
+import server.scaler

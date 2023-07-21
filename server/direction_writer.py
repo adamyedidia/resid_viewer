@@ -1,12 +1,13 @@
 from sklearn.decomposition import PCA
 from sklearn.discriminant_analysis import StandardScaler
 from database import SessionLocal
-from direction import add_direction
-from model import Model
-from resid import Resid
-from resid_writer import model_name, cache, cfg
-from scaler import add_scaler
-from utils import get_layer_num_from_resid_type
+from server.direction import add_direction
+from server.model import Model
+from server.resid import Resid
+from server.resid_writer import model_name
+from server.transformer import cache, cfg
+from server.scaler import add_scaler
+from server.utils import get_layer_num_from_resid_type
 import numpy as np
 
 

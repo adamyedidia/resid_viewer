@@ -1,7 +1,7 @@
 from sqlalchemy import ARRAY, Column, DateTime, ForeignKey, Index, Integer, String, func
 from sqlalchemy.orm import relationship
-from database import Base
-from user import User
+from server.database import Base
+from server.user import User
 
 class Prompt(Base):
     __tablename__ = "prompts"

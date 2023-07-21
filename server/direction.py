@@ -1,11 +1,11 @@
 from typing import Optional
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, and_, exists, func
-from database import Base
+from server.database import Base
 from sqlalchemy.orm import relationship
 import numpy as np
-from model import Model
-from scaler import Scaler
-from user import User
+from server.model import Model
+from server.scaler import Scaler
+from server.user import User
 
 class Direction(Base):
     __tablename__ = "directions"

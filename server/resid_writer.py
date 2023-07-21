@@ -1,10 +1,10 @@
 from sqlalchemy import and_, exists
-from database import SessionLocal
-from model import Model
-from prompt import Prompt
-from resid import Resid, add_resid
-from utils import cuda, enc, get_layer_num_from_resid_type
-from transformer import reference_gpt2, model_name
+from server.database import SessionLocal
+from server.model import Model
+from server.prompt import Prompt
+from server.resid import Resid, add_resid
+from server.utils import cuda, enc, get_layer_num_from_resid_type
+from server.transformer import reference_gpt2, model_name
 
 def write_resids_for_prompt(sess, prompt: Prompt, model: Model) -> None:
     text = prompt.text

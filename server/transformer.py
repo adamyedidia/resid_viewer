@@ -5,7 +5,7 @@ from fancy_einsum import einsum
 from transformer_lens import HookedTransformer
 from transformer_lens import loading_from_pretrained as loading
 from transformer_lens.utils import gelu_new
-from utils import M1_MAC, cuda
+from server.utils import M1_MAC, cuda
 from dataclasses import dataclass
 import math
 

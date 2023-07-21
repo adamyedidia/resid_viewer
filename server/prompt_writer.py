@@ -1,6 +1,6 @@
-from prompt import Prompt
-from utils import enc
-from database import SessionLocal
+from server.prompt import Prompt
+from server.utils import enc
+from server.database import SessionLocal
 import random
 import sys
 

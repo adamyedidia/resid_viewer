@@ -1,14 +1,14 @@
 from typing import Optional
 from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, and_, exists, func
 from sqlalchemy.orm import relationship
-from database import Base, SessionLocal
+from server.database import Base, SessionLocal
 import numpy as np
 from sklearn.discriminant_analysis import StandardScaler
 
-from model import Model
-from prompt import Prompt
-from utils import enc
-from transformer import models_dict
+from server.model import Model
+from server.prompt import Prompt
+from server.utils import enc
+from server.transformer import models_dict
 import torch
 
 class Resid(Base):
