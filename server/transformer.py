@@ -141,7 +141,7 @@ class PosEmbed(nn.Module):
 # rand_int_test(PosEmbed, [2, 4])
 # load_gpt2_test(PosEmbed, reference_gpt2.pos_embed, tokens)
 class Attention(nn.Module):
-    def __init__(self, cfg, layer_num):
+    def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg
         self.W_Q = nn.Parameter(torch.empty((cfg.n_heads, cfg.d_model, cfg.d_head)))
@@ -157,8 +157,6 @@ class Attention(nn.Module):
         self.W_O = nn.Parameter(torch.empty((cfg.n_heads, cfg.d_head, cfg.d_model)))
         nn.init.normal_(self.W_O, std=self.cfg.init_range)
         self.b_O = nn.Parameter(torch.zeros((cfg.d_model)))
-        
-        self.layer_num = layer_num
 
         self.register_buffer("IGNORE", torch.tensor(-1e5, dtype=torch.float32, device="cpu" if M1_MAC else "cuda"))
 
@@ -166,17 +164,10 @@ class Attention(nn.Module):
         # normalized_resid_pre: [batch, position, d_model]
         if self.cfg.debug: print("Normalized_resid_pre:", normalized_resid_pre.shape)
 
-        print(f'normalized_resid_pre: {normalized_resid_pre.shape}')
-
         q = einsum("batch query_pos d_model, n_heads d_model d_head -> batch query_pos n_heads d_head",
                    normalized_resid_pre, self.W_Q) + self.b_Q
-        
-        print(f'q: {q.shape}')
-
         k = einsum("batch key_pos d_model, n_heads d_model d_head -> batch key_pos n_heads d_head",
                    normalized_resid_pre, self.W_K) + self.b_K
-
-        print(f'k: {k.shape}')
 
         attn_scores = einsum(
             "batch query_pos n_heads d_head, batch key_pos n_heads d_head -> batch n_heads query_pos key_pos", q, k)
@@ -185,22 +176,14 @@ class Attention(nn.Module):
         attn_scores = self.apply_causal_mask(attn_scores)
         pattern = attn_scores.softmax(dim=-1)  # [batch, n_head, query_pos, key_pos]
 
-        print(f'pattern: {pattern.shape}')
-
         v = einsum("batch key_pos d_model, n_heads d_model d_head -> batch key_pos n_heads d_head",
                    normalized_resid_pre, self.W_V) + self.b_V
 
-        print(f'v: {v.shape}')
-
         z = einsum("batch n_heads query_pos key_pos, batch key_pos n_heads d_head -> batch query_pos n_heads d_head",
                    pattern, v)
-        
-        print(f'z: {z.shape}')
 
         attn_out = einsum("batch query_pos n_heads d_head, n_heads d_head d_model -> batch query_pos d_model", z,
                           self.W_O) + self.b_O
-
-        print(f'attn_out: {attn_out.shape}')
 
         return attn_out
 
@@ -216,7 +199,7 @@ class Attention(nn.Module):
 # load_gpt2_test(Attention, reference_gpt2.blocks[0].attn, cache["blocks.0.ln1.hook_normalized"])
 
 class MLP(nn.Module):
-    def __init__(self, cfg, layer_num):
+    def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg
         self.W_in = nn.Parameter(torch.empty((cfg.d_model, cfg.d_mlp)))
@@ -225,26 +208,14 @@ class MLP(nn.Module):
         self.W_out = nn.Parameter(torch.empty((cfg.d_mlp, cfg.d_model)))
         nn.init.normal_(self.W_out, std=self.cfg.init_range)
         self.b_out = nn.Parameter(torch.zeros((cfg.d_model)))
-        self.layer_num = layer_num
 
     def forward(self, normalized_resid_mid):
         # normalized_resid_mid: [batch, position, d_model]
-
-        print('normalized_resid_mid: ', normalized_resid_mid.shape)
-
         if self.cfg.debug: print("Normalized_resid_mid:", normalized_resid_mid.shape)
         pre = einsum("batch position d_model, d_model d_mlp -> batch position d_mlp", normalized_resid_mid,
                      self.W_in) + self.b_in
-        
-        print('pre: ', pre.shape)
-
         post = gelu_new(pre)
-
-        print('post: ', post.shape)
         mlp_out = einsum("batch position d_mlp, d_mlp d_model -> batch position d_model", post, self.W_out) + self.b_out
-
-        print('mlp_out: ', mlp_out.shape)
-
         return mlp_out
 
 
@@ -252,31 +223,24 @@ class MLP(nn.Module):
 # load_gpt2_test(MLP, reference_gpt2.blocks[0].mlp, cache["blocks.0.ln2.hook_normalized"])
 
 class TransformerBlock(nn.Module):
-    def __init__(self, cfg, layer_num):
+    def __init__(self, cfg):
         super().__init__()
         self.cfg = cfg
 
         self.ln1 = LayerNorm(cfg)
-        self.attn = Attention(cfg, layer_num)
+        self.attn = Attention(cfg)
         self.ln2 = LayerNorm(cfg)
-        self.mlp = MLP(cfg, layer_num)
+        self.mlp = MLP(cfg)
 
-    def forward(self, resid_pre, o_i=None):
+    def forward(self, resid_pre):
         # resid_pre [batch, position, d_model]
-        if self.cfg.debug: print("Resid_pre:", resid_pre.shape)
-
         normalized_resid_pre = self.ln1(resid_pre)
         attn_out = self.attn(normalized_resid_pre)
         resid_mid = resid_pre + attn_out
 
-        if self.cfg.debug: print("Resid_mid:", resid_mid.shape)
-
         normalized_resid_mid = self.ln2(resid_mid)
         mlp_out = self.mlp(normalized_resid_mid)
         resid_post = resid_mid + mlp_out
-
-        print(f'resid_post: {resid_post.shape}')
-
         return resid_post
 
 
@@ -305,34 +269,42 @@ class DemoTransformer(nn.Module):
         self.cfg = cfg
         self.embed = Embed(cfg)
         self.pos_embed = PosEmbed(cfg)
-        self.blocks = nn.ModuleList([TransformerBlock(cfg, layer_num) for layer_num in range(cfg.n_layers)])
+        self.blocks = nn.ModuleList([TransformerBlock(cfg) for _ in range(cfg.n_layers)])
         self.ln_final = LayerNorm(cfg)
         self.unembed = Unembed(cfg)
-    
+
     def forward(self, tokens):
         # tokens [batch, position]
         embed = self.embed(tokens)
+        # visualize_tensor(self.embed.W_E, 'we')
+        # print(embed.shape)      
+        # visualize_tensor(embed, "Embedding")  
         pos_embed = self.pos_embed(tokens)
+
         print(pos_embed.shape)
-        # pos_embed = torch.mean(pos_embed, dim=0)
 
+        first_part = pos_embed[:, :495, :]
+        last_part = pos_embed[:, 495:, :]
+
+        mean_of_last_10 = last_part.mean(dim=1).unsqueeze(1)
+
+        duplicated_mean = mean_of_last_10.repeat_interleave(last_part.shape[1], dim=1)
+
+        # print(first_part.shape)
+        # print(mean_of_last_10.shape)
+
+        pos_embed = torch.cat((first_part, duplicated_mean), dim=1)
+        print(pos_embed.shape)
+
+        # print(pos_embed.shape)
+        # visualize_tensor(pos_embed, "Positional Embedding")
         residual = embed + pos_embed
-        # residual = embed
-        # residual = pos_embed
-
-        print(f'embed: {embed.shape}')
-        print(f'pos_embed: {pos_embed.shape}')
-
-        print(f'start_residual: {residual.shape}')
         # print(residual.shape)
         # visualize_tensor(residual, "Residual")
         for block in self.blocks:
             residual = block(residual)
-            print('residual: ', residual.shape)
+            # print(residual)
         normalized_resid_final = self.ln_final(residual)
-
-        print('normalized_resid_final:', normalized_resid_final.shape)
-        print('hello')
         # print(normalized_resid_final)
         logits = self.unembed(normalized_resid_final)
         # print(logits)

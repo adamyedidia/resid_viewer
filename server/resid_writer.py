@@ -130,7 +130,51 @@ if __name__ == '__main__':
     from dataclasses import dataclass
     from transformer_lens import loading_from_pretrained as loading
 
-    reference_text = "The greatest president of all time was Abraham"
+    reference_text = ('Request: Please repeat the following string exactly: "hello" '
+                        'Reply: "hello". '
+                        'Request: "Please repeat the following string exactly: "gorapopefm" '
+                        'Reply: "gorapopefm" '
+                        'Request: "Please repeat the following string exactly: "adfgpinaie" '
+                        'Reply: "adfgpinaie" '
+                        'Request: "Please repeat the following string exactly: " poaspdmfpm" '
+                        'Reply: " poaspdmfpm" '
+                        'Request: "Please repeat the following string exactly: "wplmedpmdp" '
+                        'Reply: "wplmedpmdp" '
+                        'Request: "Please repeat the following string exactly: "pvofampovm" '
+                        'Reply: "pvofampovm" '
+                        'Request: "Please repeat the following string exactly: "poemfvpoe" '
+                        'Reply: "poemfvpoe" '
+                        'Request: "Please repeat the following string exactly: "vfavn" '
+                        'Reply: "vfavn" '
+                        'Request: "Please repeat the following string exactly: "sopqmx" '
+                        'Reply: "sopqmx" '
+                        'Request: "Please repeat the following string exactly: "france" '
+                        'Reply: "france" '
+                        'Request: "Please repeat the following string exactly: "vilion" '
+                        'Reply: "pvofampovm" ' 
+                        'Request: "Please repeat the following string exactly: " jack" '
+                        'Reply: " jack" '
+                        'Request: "Please repeat the following string exactly: "aervaxv" '
+                        'Reply: "aervaxv" '
+                        'Request: "Please repeat the following string exactly: " poem" '
+                        'Reply: " poem" '
+                        'Request: "Please repeat the following string exactly: " Reddit" '
+                        'Reply: " Reddit" '
+                        'Request: "Please repeat the following string exactly: "irnnrf" '
+                        'Reply: "irnnrf" '
+                        'Request: "Please repeat the following string exactly: "wepoc" '
+                        'Reply: "wepoc" '
+                        'Request: "Please repeat the following string exactly: "propmfpm" '
+                        'Reply: "propmfpm" '
+                        'Request: "Please repeat the following string exactly: " Germany" '
+                        'Reply: " Germany""'
+                        'Request: "Please repeat the following string exactly: "rathasoadga" '
+                        'Reply: "rathasoadga" '
+                        'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
+                        'Reply: "1pdjpm3efe4" '
+                        'Request: "Please repeat the following string exactly: "apple berry" '
+                        'Reply: "')
+    
     tokens = reference_gpt2.to_tokens(reference_text)
 
     @dataclass
@@ -163,6 +207,7 @@ if __name__ == '__main__':
 
 
     demo_gpt2 = DemoTransformer(get_basic_config(model_name=model_name))
+    demo_gpt2.load_state_dict(reference_gpt2.state_dict(), strict=False)
 
     def cuda(x):
         return x.to('cpu') if M1_MAC else x.cuda()
