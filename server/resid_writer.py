@@ -122,36 +122,73 @@ def main():
             continue
 
 
-    # reference_text = "The greatest president of all time was Abraham"
-    # tokens = reference_gpt2.to_tokens(reference_text)
-
-    # def cuda(x):
-    #     return x.to('cpu') if M1_MAC else x.cuda()
-
-    # tokens = cuda(tokens)
-    # logits, cache = reference_gpt2.run_with_cache(tokens)
-
-    # print(cache.keys())
-    # print(cache['blocks.3.attn.hook_v'].shape)
-    # print(len(cache.keys()))
-
-    # last_logits = logits[-1, -1]  # type: ignore
-    # # Apply softmax to convert the logits to probabilities
-    # probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
-    
-    # # Get the indices of the top 10 probabilities
-    # topk_indices = np.argpartition(probabilities, -10)[-10:]
-    # # Get the top 10 probabilities
-    # topk_probabilities = probabilities[topk_indices]
-    # # Get the top 10 tokens
-    # topk_tokens = [enc.decode([i]) for i in topk_indices]
-
-    # # Print the top 10 tokens and their probabilities
-    # for token, probability in zip(topk_tokens, topk_probabilities):
-    #     print(f"Token: {token}, Probability: {probability}")
-
-
 if __name__ == '__main__':
+    M1_MAC = True
+    import torch
+    import numpy as np
+    from transformer import DemoTransformer
+    from dataclasses import dataclass
+    from transformer_lens import loading_from_pretrained as loading
+
+    reference_text = "The greatest president of all time was Abraham"
+    tokens = reference_gpt2.to_tokens(reference_text)
+
+    @dataclass
+    class Config:
+        d_model: int = 768
+        debug: bool = False
+        layer_norm_eps: float = 1e-5
+        d_vocab: int = 50257
+        init_range: float = 0.02
+        n_ctx: int = 1024
+        d_head: int = 64
+        d_mlp: int = 3072
+        n_heads: int = 12
+        n_layers: int = 12
+
+    def get_basic_config(model_name: str, **kwargs):
+        return Config(
+            **{k: v for k, v in loading.get_pretrained_model_config(model_name, 
+                                                            **kwargs).to_dict().items() if k in [
+                'd_model',
+                'layer_norm_eps',
+                'd_vocab',
+                'init_range',
+                'n_ctx',
+                'd_head',
+                'd_mlp',
+                'n_heads',
+                'n_layers',
+            ]})
+
+
+    demo_gpt2 = DemoTransformer(get_basic_config(model_name=model_name))
+
+    def cuda(x):
+        return x.to('cpu') if M1_MAC else x.cuda()
+
+    tokens = cuda(tokens)
+    logits = demo_gpt2(tokens)
+
+    last_logits = logits[-1, -1]  # type: ignore
+    # Apply softmax to convert the logits to probabilities
+    probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
+    
+    print(probabilities)
+
+    # Get the indices of the top 10 probabilities
+    topk_indices = np.argpartition(probabilities, -10)[-10:]
+    # Get the top 10 probabilities
+    topk_probabilities = probabilities[topk_indices]
+    # Get the top 10 tokens
+    topk_tokens = [enc.decode([i]) for i in topk_indices]
+
+    # Print the top 10 tokens and their probabilities
+    for token, probability in zip(topk_tokens, topk_probabilities):
+        print(f"Token: {token}, Probability: {probability}")
+
+    raise Exception()
+
     # reference_text = "The greatest president of all time was Abraham"
     # reference_text = 'hey, what is that? is that a dog'
     # tokens = reference_gpt2.to_tokens(reference_text)

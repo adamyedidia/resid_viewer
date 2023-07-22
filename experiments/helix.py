@@ -46,13 +46,15 @@ if __name__ == '__main__':
         mean_vector = np.mean(matrix, axis=0)
         matrix = matrix - mean_vector
 
-        pca = PCA(n_components=3)
+        pca = PCA(n_components=6)
+        pca = PCA(n_components=)
+
         pca_result = pca.fit_transform(matrix)
 
         # Separating the 3 PCA components
-        x_pca = pca_result[:, 0]
-        y_pca = pca_result[:, 1]
-        z_pca = pca_result[:, 2]
+        x_pca = pca_result[:, 3]
+        y_pca = pca_result[:, 4]
+        z_pca = pca_result[:, 5]
 
         # create color map
         num_of_rows = matrix.shape[0]
@@ -74,4 +76,4 @@ if __name__ == '__main__':
         ax.set_title(f'{model_name} ({variance_explained*100:.2f}% variance)')
 
     plt.tight_layout()
-    plt.savefig('helix_grid_first_100.png')
+    plt.savefig('helix_grid_4_thru_6.png')

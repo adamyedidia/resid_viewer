@@ -313,7 +313,12 @@ class DemoTransformer(nn.Module):
         # tokens [batch, position]
         embed = self.embed(tokens)
         pos_embed = self.pos_embed(tokens)
+        print(pos_embed.shape)
+        # pos_embed = torch.mean(pos_embed, dim=0)
+
         residual = embed + pos_embed
+        # residual = embed
+        # residual = pos_embed
 
         print(f'embed: {embed.shape}')
         print(f'pos_embed: {pos_embed.shape}')
@@ -327,6 +332,7 @@ class DemoTransformer(nn.Module):
         normalized_resid_final = self.ln_final(residual)
 
         print('normalized_resid_final:', normalized_resid_final.shape)
+        print('hello')
         # print(normalized_resid_final)
         logits = self.unembed(normalized_resid_final)
         # print(logits)
