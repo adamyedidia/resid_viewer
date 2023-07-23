@@ -172,10 +172,15 @@ if __name__ == '__main__':
                         'Reply: "rathasoadga" '
                         'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
                         'Reply: "1pdjpm3efe4" '
-                        'Request: "Please repeat the following string exactly: "apple berry" '
+                        'Request: "Please repeat the following string exactly: "apple orange" '
                         'Reply: "')
     
+    # reference_text = 'Hello my name is'
+
     tokens = reference_gpt2.to_tokens(reference_text)
+
+    print(reference_gpt2.to_str_tokens(reference_text))
+    print([(i, token) for i, token in enumerate(reference_gpt2.to_str_tokens(reference_text))])
 
     @dataclass
     class Config:
@@ -213,7 +218,10 @@ if __name__ == '__main__':
         return x.to('cpu') if M1_MAC else x.cuda()
 
     tokens = cuda(tokens)
-    logits = demo_gpt2(tokens)
+    logits = demo_gpt2(tokens, 
+                    #    average_pos_embed=True, 
+                    #    zero_out_pos=500
+                    )
 
     last_logits = logits[-1, -1]  # type: ignore
     # Apply softmax to convert the logits to probabilities

@@ -187,7 +187,8 @@ if __name__ == '__main__':
 
         for i in range(num_of_rows):
             ax.scatter(x_pca[i], y_pca[i], z_pca[i], 
-                       color=colors[i] if i != 94 and i != 95 else 'green' if i == 94 else 'blue')
+                    #    color=colors[i] if i != 94 and i != 95 else 'green' if i == 94 else 'blue')
+                       color=colors[i])
 
         ax.set_xlabel("PCA1")
         ax.set_ylabel("PCA2")
