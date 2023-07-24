@@ -49,5 +49,52 @@ def write_openwebtext10k_prompts() -> None:
         ))
         sess.commit()
 
+        
+def write_catdog_prompts() -> None:
+    sess = SessionLocal()
+    print('Writing catdog prompts')
+
+    seq_length = 20
+
+    for i in range(seq_length):
+        dog_prompt_long = ' dog' * i + (' cat' * seq_length + ' dog' * seq_length) * 30
+        cat_prompt_long = ' cat' * i + (' dog' * seq_length + ' cat' * seq_length) * 30
+
+        dog_prompt_encoded_long = enc.encode(dog_prompt_long)
+        cat_prompt_encoded_long = enc.encode(cat_prompt_long)
+
+        dog_prompt_encoded = dog_prompt_encoded_long[:1023]
+        cat_prompt_encoded = cat_prompt_encoded_long[:1023]
+
+        dog_prompt_str_split_by_token = [enc.decode([token]) for token in dog_prompt_encoded]
+        cat_prompt_str_split_by_token = [enc.decode([token]) for token in cat_prompt_encoded]
+
+        dog_prompt_text = enc.decode(dog_prompt_encoded)
+        cat_prompt_text = enc.decode(cat_prompt_encoded)
+
+        if (existing_prompt := sess.query(Prompt).filter(Prompt.text == dog_prompt_text).first()) is not None:
+            # print(f'Prompt already exists: {existing_prompt}')
+            continue
+
+        sess.add(Prompt(
+            text=dog_prompt_text,
+            encoded_text_split_by_token=dog_prompt_encoded,
+            text_split_by_token=dog_prompt_str_split_by_token,
+            length_in_tokens=len(dog_prompt_encoded),
+            dataset='catdog',
+        ))
+
+        sess.add(Prompt(
+            text=cat_prompt_text,
+            encoded_text_split_by_token=cat_prompt_encoded,
+            text_split_by_token=cat_prompt_str_split_by_token,
+            length_in_tokens=len(cat_prompt_encoded),
+            dataset='catdog',
+        ))
+
+        sess.commit()
+
+
 if __name__ == '__main__':
-    write_openwebtext10k_prompts()
+    # write_openwebtext10k_prompts()
+    write_catdog_prompts()

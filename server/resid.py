@@ -23,6 +23,8 @@ class Resid(Base):
     model_id = Column(Integer, ForeignKey("models.id"), nullable=False)
     model = relationship("Model", lazy="joined")
 
+    dataset = Column(String)
+
     layer = Column(Integer)
     type = Column(String, nullable=False)
     head = Column(Integer)
@@ -40,6 +42,8 @@ class Resid(Base):
               "model_id", "prompt_id", "layer", "type", "head", "token_position", "created_at"),
         Index("idx_resids_model_layer_type_head_token_position_ca",
               "model_id", "layer", "type", "head", "token_position", "created_at"),
+        Index("idx_resids_model_dataset_layer_type_head_tp_ca",
+              "model_id", "dataset", "layer", "type", "head", "token_position", "created_at"),
     )
 
     @property
@@ -152,6 +156,7 @@ def add_resid(sess,
         type=type,
         token_position=token_position,
         head=head,
+        dataset=prompt.dataset,
         dimension=arr.shape[0],
     )
 
