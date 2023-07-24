@@ -50,5 +50,14 @@ def write_openwebtext10k_prompts() -> None:
         sess.commit()
 
 
+def write_catdog_prompts() -> None:
+    sess = SessionLocal()
+    print('Writing catdog prompts')
+
+    for i in range(20):
+        dog_prompt_long = ['dog'] * i + (['cat'] * 25 + ''
+
+
 if __name__ == '__main__':
     write_openwebtext10k_prompts()
+    write_catdog_prompts()

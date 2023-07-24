@@ -49,6 +49,8 @@ def main():
             pca = PCA()
             X_pca = pca.fit_transform(X_scaled)
 
+            print('PCA complete!')
+
             explained_variance_ratio = pca.explained_variance_ratio_
 
             scaler = add_scaler(
