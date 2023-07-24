@@ -11,6 +11,7 @@ from transformer_lens.utils import gelu_new
 from server.utils import M1_MAC, cuda
 from dataclasses import dataclass
 import math
+import pickle
 
 model_name = "gpt2-small"
 # model_name = "pythia-70m"
@@ -144,7 +145,7 @@ class PosEmbed(nn.Module):
 # rand_int_test(PosEmbed, [2, 4])
 # load_gpt2_test(PosEmbed, reference_gpt2.pos_embed, tokens)
 class Attention(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, layer_num):
         super().__init__()
         self.cfg = cfg
         self.W_Q = nn.Parameter(torch.empty((cfg.n_heads, cfg.d_model, cfg.d_head)))
@@ -160,10 +161,11 @@ class Attention(nn.Module):
         self.W_O = nn.Parameter(torch.empty((cfg.n_heads, cfg.d_head, cfg.d_model)))
         nn.init.normal_(self.W_O, std=self.cfg.init_range)
         self.b_O = nn.Parameter(torch.zeros((cfg.d_model)))
+        self.layer_num = layer_num
 
         self.register_buffer("IGNORE", torch.tensor(-1e5, dtype=torch.float32, device="cpu" if M1_MAC else "cuda"))
 
-    def forward(self, normalized_resid_pre, zero_out_pos=None):
+    def forward(self, normalized_resid_pre, zero_out_pos=None, save_attn_patterns_filename=None):
         # normalized_resid_pre: [batch, position, d_model]
         if self.cfg.debug: print("Normalized_resid_pre:", normalized_resid_pre.shape)
 
@@ -187,11 +189,13 @@ class Attention(nn.Module):
 
 
         for i in range(12):
-            print(i)
-            import matplotlib.pyplot as plt
-            plt.matshow(pattern[0][i].detach().numpy(), vmin=0, vmax=0.1)
-            plt.colorbar()
-            plt.show()
+            if save_attn_patterns_filename:
+                pickle.dump(pattern[0][i].detach().numpy(), 
+                            open(f'pickle_files/{save_attn_patterns_filename}_L{self.layer_num}_H{i}.p', 'wb'))
+            # import matplotlib.pyplot as plt
+            # plt.matshow(pattern[0][i].detach().numpy(), vmin=0, vmax=0.1)
+            # plt.colorbar()
+            # plt.show()
 
         v = einsum("batch key_pos d_model, n_heads d_model d_head -> batch key_pos n_heads d_head",
                    normalized_resid_pre, self.W_V) + self.b_V
@@ -252,19 +256,20 @@ class MLP(nn.Module):
 # load_gpt2_test(MLP, reference_gpt2.blocks[0].mlp, cache["blocks.0.ln2.hook_normalized"])
 
 class TransformerBlock(nn.Module):
-    def __init__(self, cfg):
+    def __init__(self, cfg, layer_num):
         super().__init__()
         self.cfg = cfg
 
         self.ln1 = LayerNorm(cfg)
-        self.attn = Attention(cfg)
+        self.attn = Attention(cfg, layer_num)
         self.ln2 = LayerNorm(cfg)
         self.mlp = MLP(cfg)
 
-    def forward(self, resid_pre, zero_out_pos=None):
+    def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False):
         # resid_pre [batch, position, d_model]
         normalized_resid_pre = self.ln1(resid_pre)
-        attn_out = self.attn(normalized_resid_pre, zero_out_pos=zero_out_pos)
+        attn_out = self.attn(normalized_resid_pre, zero_out_pos=zero_out_pos, 
+                             save_attn_patterns_filename=save_attn_patterns_filename)
         resid_mid = resid_pre + attn_out
 
         normalized_resid_mid = self.ln2(resid_mid)
@@ -298,11 +303,13 @@ class DemoTransformer(nn.Module):
         self.cfg = cfg
         self.embed = Embed(cfg)
         self.pos_embed = PosEmbed(cfg)
-        self.blocks = nn.ModuleList([TransformerBlock(cfg) for _ in range(cfg.n_layers)])
+        self.blocks = nn.ModuleList([TransformerBlock(cfg, layer_num) for layer_num in range(cfg.n_layers)])
         self.ln_final = LayerNorm(cfg)
         self.unembed = Unembed(cfg)
 
-    def forward(self, tokens, average_pos_embed=False, zero_out_pos=None):
+    def forward(self, tokens, average_pos_embed=False, zero_out_pos=None, 
+                save_attn_patterns_filename=False, no_pos_embed_contribution=False,
+                no_embed_contribution=False):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -328,11 +335,17 @@ class DemoTransformer(nn.Module):
 
         # print(pos_embed.shape)
         # visualize_tensor(pos_embed, "Positional Embedding")
-        residual = embed + pos_embed
+        if no_pos_embed_contribution:
+            residual = embed
+        elif no_embed_contribution:
+            residual = pos_embed
+        else:
+            residual = embed + pos_embed
         # print(residual.shape)
         # visualize_tensor(residual, "Residual")
         for block in self.blocks:
-            residual = block(residual, zero_out_pos=zero_out_pos)
+            residual = block(residual, zero_out_pos=zero_out_pos,
+                             save_attn_patterns_filename=save_attn_patterns_filename)
             # print(residual)
         normalized_resid_final = self.ln_final(residual)
         # print(normalized_resid_final)

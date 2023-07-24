@@ -3,3 +3,4 @@ local_settings.py
 client/node_modules/
 *.png
 .DS_Store
+experiments/pickle_files/*
