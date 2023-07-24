@@ -1,9 +1,11 @@
 from logging.config import fileConfig
+import sys
+sys.path.append('..')
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
-from database import Base
-import db
+from server.database import Base
+import server.db
 
 from alembic import context  # type: ignore
 

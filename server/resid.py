@@ -1,3 +1,6 @@
+import sys
+sys.path.append('../..')
+
 from typing import Optional
 from sqlalchemy import Column, DateTime, ForeignKey, Index, Integer, ARRAY, Float, String, and_, exists, func
 from sqlalchemy.orm import relationship
