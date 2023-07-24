@@ -17,6 +17,8 @@ class Scaler(Base):
     model_id = Column(Integer, ForeignKey("models.id"), nullable=False, index=True)
     model = relationship("Model")
 
+    generated_by_process = Column(String)
+
     layer = Column(Integer)
     type = Column(String, nullable=False)
     head = Column(Integer)
@@ -28,6 +30,7 @@ class Scaler(Base):
 
     __table_args__ = (
         Index("idx_scalers_model_layer_type_created_at", "model_id", "layer", "type", "head", "created_at"),
+        Index("idx_scalers_model_generated_layer_type_created_at", "model_id", "generated_by_process", "layer", "type", "head", "created_at"),
     )
 
     def __repr__(self):
@@ -40,13 +43,15 @@ def add_scaler(sess,
                layer: Optional[int],
                type: str,
                head: Optional[int],
+               generated_by_process: str,
                no_commit: bool = False) -> Scaler:
     
     if (scaler := sess.query(Scaler).filter(and_(
         Scaler.model == model,
         Scaler.layer == layer,
         Scaler.type == type,
-        Scaler.head == head,        
+        Scaler.head == head, 
+        Scaler.generated_by_process == generated_by_process,       
     )).one_or_none()) is not None:
         print('Scaler already exists')
         return scaler

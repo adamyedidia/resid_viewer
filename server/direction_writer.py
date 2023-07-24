@@ -12,19 +12,21 @@ from server.transformer import cache, cfg
 from server.scaler import add_scaler
 from server.utils import get_layer_num_from_resid_type
 import numpy as np
+import argparse
 
 
-def main():
+def main(catdog: bool = False):
     sess = SessionLocal()
     model = sess.query(Model).filter(Model.name == model_name).one_or_none()
 
-    for key in cache.keys():
+    for key in ['blocks.0.hook_attn_out'] if catdog else cache.keys():
         layer_num = get_layer_num_from_resid_type(key)
 
         for head in [None, *range(cfg.n_heads)]:
             resids = (
                 sess.query(Resid)
                 .filter(Resid.model == model)
+                .filter(*([Resid.dataset == 'catdog'] if catdog else []))
                 .filter(Resid.layer == layer_num)
                 .filter(Resid.type == key)
                 .filter(Resid.head == head)
@@ -53,6 +55,8 @@ def main():
 
             explained_variance_ratio = pca.explained_variance_ratio_
 
+            generated_by_process = 'catdog_pca' if catdog else 'pca'
+
             scaler = add_scaler(
                 sess,
                 standard_scaler=standard_scaler,
@@ -60,6 +64,7 @@ def main():
                 layer=layer_num,
                 type=key,
                 head=head,
+                generated_by_process=generated_by_process,
                 no_commit=True
             )
 
@@ -71,7 +76,7 @@ def main():
                     layer=layer_num,
                     type=key,
                     head=head,
-                    generated_by_process='pca',
+                    generated_by_process=generated_by_process,
                     component_index=component_index,
                     scaler=scaler,
                     fraction_of_variance_explained=explained_variance_ratio[component_index],
@@ -82,4 +87,11 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    import argparse
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--catdog', action='store_true')
+
+    args = parser.parse_args()
+
+    main(catdog = args.catdog)
