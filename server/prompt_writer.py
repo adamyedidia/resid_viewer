@@ -96,5 +96,5 @@ def write_catdog_prompts() -> None:
 
 
 if __name__ == '__main__':
-    # write_openwebtext10k_prompts()
-    write_catdog_prompts()
+    write_openwebtext10k_prompts()
+    # write_catdog_prompts()

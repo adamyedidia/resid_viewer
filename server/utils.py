@@ -1,5 +1,6 @@
 from typing import Optional
 import tiktoken
+import random
 
 from server.settings import M1_MAC
 
@@ -26,3 +27,18 @@ def get_layer_num_from_resid_type(resid_type: str) -> Optional[int]:
             return int(s)
     return None
 
+
+def get_random_token(exclude_endoftext: bool = True) -> int:
+    return random.randint(0, 50255 if exclude_endoftext else 50256)
+
+
+def get_random_str_token(exclude_endoftext: bool = True) -> str:
+    return enc.decode([get_random_token(exclude_endoftext)])
+
+
+def lists_are_equal(l1, l2):
+    return all([x == y for x, y in zip(l1, l2)])
+
+
+def has_unique_tokenization(l: list[int]) -> bool:
+    return lists_are_equal(l, enc.encode(enc.decode(l)))
