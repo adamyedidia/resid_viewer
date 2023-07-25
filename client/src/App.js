@@ -1,5 +1,17 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Box, FormControl, InputLabel, MenuItem, Select, Grid, Paper, TextField, Slider } from '@mui/material';
+import {
+  Button,
+  Box,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Grid,
+  Paper,
+  TextField,
+  Slider,
+  Card, CardHeader, CardContent
+} from '@mui/material';
 import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
 import { Typography } from '@mui/material';
@@ -213,26 +225,34 @@ const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirect
 
   return (
     <div>
-      <h2>My Directions</h2>
-      <div style={{ height: '300px', overflowY: 'auto' }}>
-        {myDirections.map((dir) => (
-          <div
-            key={dir.id}
-            onClick={() => setDirection(dir)}
-            style={{
-              border: dir?.id === direction?.id ? '1px solid blue' : 'none',
-              padding: '10px',
-              margin: '10px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between'
-            }}
-          >
-            <span>{dir.name}</span>
-            <FaTrash onClick={() => handleDelete(dir.id)} />
-          </div>
-        ))}
-      </div>
+      <Card>
+        <CardContent>
+          <Typography variant="body1" color="text.secondary">
+            My Directions
+          </Typography>
+        </CardContent>
+        <CardContent>
+          <div style={{ overflowY: 'auto' }}>
+          {myDirections.map((dir) => (
+            <div
+              key={dir.id}
+              onClick={() => setDirection(dir)}
+              style={{
+                border: dir?.id === direction?.id ? '1px solid blue' : 'none',
+                padding: '10px',
+                margin: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              <span>{dir.name}</span>
+              <FaTrash onClick={() => handleDelete(dir.id)} />
+            </div>
+          ))}
+        </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
@@ -724,12 +744,46 @@ const App = () => {
     null
   )
 
-  return (
-    <ThemeProvider theme={darkTheme}>
-      <div style={appStyle}>
-        <ToastContainer />
-        <Grid container spacing={3} justify="center">
-          <TypeSelector
+  const findNewDirection = (
+      <>
+            {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
+          <Grid item xs={12} md={6}>
+            <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
+              Find a new direction
+            </Button>
+          </Grid>
+        </Grid>}
+        <Dialog
+          open={directionSliderDialogOpen}
+          onClose={handleCloseDirectionSliderDialog}
+          PaperComponent={DraggablePaper}
+          aria-labelledby="draggable-dialog-title"
+        >
+          <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+            <Paper>
+              <DraggableDialogTitle id="draggable-dialog-title">
+                Find a new direction
+              </DraggableDialogTitle>
+              <MemoizedDialogContent
+                directionSliders={directionSliders}
+                setDirectionSliders={setDirectionSliders}
+                allDirections={allDirections}
+                direction={direction}
+                selectedType={selectedType}
+                selectedHead={selectedHead}
+                username={debouncedUsername}
+                setDirection={setDirection}
+                myDirections={myDirections}
+                setMyDirections={setMyDirections}
+              />
+            </Paper>
+          </Draggable>
+        </Dialog>
+  </>);
+
+  const selectTypeHeadComp = (
+      <>
+        <TypeSelector
             types={types}
             selectedType={selectedType}
             onTypeChange={(type) => setSelectedType(type)}
@@ -751,71 +805,66 @@ const App = () => {
               label='Component Index'
             />
           )}
+        </>
+  );
+
+  return (
+    <ThemeProvider theme={darkTheme}>
+      <div style={appStyle}>
+        <ToastContainer />
+        <Grid container spacing={1} justify="center" direction={'row'}>
+        {/*First Col*/}
+        <Grid item container xs={8} direction={'column'}>
+          <Grid item>{selectTypeHeadComp}</Grid>
           <Grid item>
-            <MyDirectionsWidget 
-              direction={direction} 
-              setDirection={setDirection} 
-              myDirections={myDirections}
-              setMyDirections={setMyDirections}
-              debouncedUsername={debouncedUsername}
-            />
+            {loadingResids && <>
+              <LoadingIndicator />
+              <br />
+            </>}
           </Grid>
-          <Grid item xs={12} md={6}>
-            <TextField value={username} label="Your username" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth onChange={handleUsernameChange}/>
-          </Grid>
-        </Grid>
-        <br />
-        {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
-          <Grid item xs={12} md={6}>
-            <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
-              Find a new direction
-            </Button>
-          </Grid>
-        </Grid>}
-        <Dialog
-          open={directionSliderDialogOpen}
-          onClose={handleCloseDirectionSliderDialog}
-          PaperComponent={DraggablePaper}
-          aria-labelledby="draggable-dialog-title"
-        >
-          <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
-            <Paper>
-              <DraggableDialogTitle id="draggable-dialog-title">
-                Find a new direction
-              </DraggableDialogTitle>
-              <MemoizedDialogContent 
-                directionSliders={directionSliders} 
-                setDirectionSliders={setDirectionSliders} 
-                allDirections={allDirections}  
-                direction={direction}
-                selectedType={selectedType}
-                selectedHead={selectedHead}
-                username={debouncedUsername}
-                setDirection={setDirection}
-                myDirections={myDirections}
-                setMyDirections={setMyDirections}
-              />
-            </Paper>
-          </Draggable>
-        </Dialog>
-        <br />
-        {loadingResids && <>
-          <LoadingIndicator />
-          <br />
-        </>}
-        <Grid container spacing={2}>
           <Grid item>
             <DirectionInfo direction={direction}/>
           </Grid>
-          <Grid item xs={18}>
+          <Grid item>
+            <PromptTable
+                groupedResids={groupedResids}
+                minDotProduct={minDotProduct}
+                maxDotProduct={maxDotProduct}
+            />
+          </Grid>
+        </Grid>
+        {/*Second col*/}
+        <Grid item container xs={4} direction={'column'} spacing={1}>
+            <Grid item>
+              <MyDirectionsWidget
+                direction={direction}
+                setDirection={setDirection}
+                myDirections={myDirections}
+                setMyDirections={setMyDirections}
+                debouncedUsername={debouncedUsername}
+              />
+          </Grid>
+          <Grid item>
+            <TextField value={username}
+                       label="Your username"
+                       variant="filled"
+                       style={{backgroundColor: '#3a3a3a'}}
+                       fullWidth
+                       onChange={handleUsernameChange}
+            />
+          </Grid>
+          <br/>
+          <Grid item>
+            {findNewDirection}
+          </Grid>
+          <Grid item>
             <DirectionDescriptionField direction={direction} username={debouncedUsername}/>
           </Grid>
-          <Grid item xs={18}>
+          <Grid item>
             <AddYourOwnPromptField username={debouncedUsername} fetchResidsAndDirection={fetchResidsAndDirection} />
           </Grid>
         </Grid>
-        <br />
-        <PromptTable groupedResids={groupedResids} minDotProduct={minDotProduct} maxDotProduct={maxDotProduct} />
+      </Grid>
       </div>
     </ThemeProvider>
   );
