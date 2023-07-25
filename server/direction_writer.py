@@ -27,7 +27,7 @@ def main(experiment_name: Optional[str] = None):
             resids = (
                 sess.query(Resid)
                 .filter(Resid.model == model)
-                .filter(*([Resid.dataset == 'catdog'] if experiment_name in ['catdog', 'catdog_dog_only'] else []))
+                .filter(*([Resid.dataset == 'catdog'] if experiment_name in ['catdog', 'catdog_dog_only'] else [Resid.dataset == 'openwebtext-10k']))
                 .filter(Resid.layer == layer_num)
                 .filter(Resid.type == key)
                 .filter(Resid.head == head)
@@ -103,4 +103,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(experiment_name='catdog' if args.catdog else 'catdog_dog_only')
+    main(experiment_name='catdog' if args.catdog else 'catdog_dog_only' if args.catdog_dog_only else None)

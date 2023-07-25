@@ -4,3 +4,4 @@ client/node_modules/
 *.png
 .DS_Store
 experiments/pickle_files/*
+.idea/*
