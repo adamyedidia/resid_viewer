@@ -73,6 +73,7 @@ def get_resids(sess):
         my_resid_prompt_ids = (
             sess.query(Prompt.id)
             .filter(Prompt.added_by_user_id == user.id)
+            .filter(Prompt.dataset == 'openwebtext-10k')
             .order_by(Prompt.created_at.desc())
             .limit(10)
             .all()
@@ -88,6 +89,7 @@ def get_resids(sess):
         .filter(Resid.layer == layer)
         .filter(Resid.type == type)
         .filter(Resid.head == head)
+        .filter(Resid.dataset == 'openwebtext-10k')
         .order_by(func.random())
         .limit(50)
         .all()
