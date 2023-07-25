@@ -13,20 +13,21 @@ from server.scaler import add_scaler
 from server.utils import get_layer_num_from_resid_type
 import numpy as np
 import argparse
+from typing import Optional
 
 
-def main(catdog: bool = False):
+def main(experiment_name: Optional[str] = None):
     sess = SessionLocal()
     model = sess.query(Model).filter(Model.name == model_name).one_or_none()
 
-    for key in ['blocks.0.hook_attn_out'] if catdog else cache.keys():
+    for key in ['blocks.0.hook_attn_out'] if experiment_name in ['catdog', 'catdog_dog_only'] else cache.keys():
         layer_num = get_layer_num_from_resid_type(key)
 
         for head in [None, *range(cfg.n_heads)]:
             resids = (
                 sess.query(Resid)
                 .filter(Resid.model == model)
-                .filter(*([Resid.dataset == 'catdog'] if catdog else []))
+                .filter(*([Resid.dataset == 'catdog'] if experiment_name in ['catdog', 'catdog_dog_only'] else []))
                 .filter(Resid.layer == layer_num)
                 .filter(Resid.type == key)
                 .filter(Resid.head == head)
@@ -38,6 +39,9 @@ def main(catdog: bool = False):
                 continue
 
             print(key, head)
+
+            if experiment_name == 'catdog_dog_only':
+                resids = [resid for resid in resids if resid.decoded_token == ' dog']
 
 
             X = np.array([resid.resid for resid in resids])
@@ -55,7 +59,11 @@ def main(catdog: bool = False):
 
             explained_variance_ratio = pca.explained_variance_ratio_
 
-            generated_by_process = 'catdog_pca' if catdog else 'pca'
+            generated_by_process = ('catdog_pca' 
+                                    if experiment_name == 'catdog' 
+                                    else 'catdog_dog_only_pca' 
+                                    if experiment_name == 'catdog_dog_only' 
+                                    else 'pca')
 
             scaler = add_scaler(
                 sess,
@@ -91,7 +99,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--catdog', action='store_true')
+    parser.add_argument('--catdog_dog_only', action='store_true')
 
     args = parser.parse_args()
 
-    main(catdog = args.catdog)
+    main(experiment_name='catdog' if args.catdog else 'catdog_dog_only')

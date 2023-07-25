@@ -83,6 +83,7 @@ def add_direction(sess,
             Direction.type == type,
             Direction.head == head,
             Direction.component_index == component_index,
+            Direction.generated_by_process == generated_by_process,
             Direction.name == name,
         )).one_or_none()) is not None:
             print('Direction already exists')
