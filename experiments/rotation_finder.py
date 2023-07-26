@@ -258,28 +258,28 @@ def get_best_solution():
             input_vectors.append((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy())
             output_vectors.append(direction.direction)
 
-            # from scipy.stats.stats import pearsonr   
-            # print(pearsonr(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), direction.direction))
+            from scipy.stats.stats import pearsonr   
+            print(pearsonr(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), direction.direction))
 
 
-            # plt.plot(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), label='learned')
-            # plt.plot(direction.direction, label='direction')
-            # plt.legend()
-            # plt.show()
+            plt.plot(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), label='learned')
+            plt.plot(direction.direction, label='direction')
+            plt.legend()
+            plt.show()
 
         elif max(token2_dot_products) < min(token1_dot_products):
             # Then this is token1 - token2
             input_vectors.append((reference_gpt2.W_E[token1] - reference_gpt2.W_E[token2]).detach().numpy())
             output_vectors.append(direction.direction)
 
-            # from scipy.stats.stats import pearsonr   
-            # print(pearsonr(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), direction.direction))
+            from scipy.stats.stats import pearsonr   
+            print(pearsonr(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), direction.direction))
 
 
-            # plt.plot(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), label='learned')
-            # plt.plot(direction.direction, label='direction')
-            # plt.legend()
-            # plt.show()
+            plt.plot(np.dot((reference_gpt2.W_E[token2] - reference_gpt2.W_E[token1]).detach().numpy(), pickle.load(open('pickle_files/learned_mat.p', 'rb'))), label='learned')
+            plt.plot(direction.direction, label='direction')
+            plt.legend()
+            plt.show()
 
         else:
             print('Weird behavior on prompt', prompt)
@@ -355,7 +355,7 @@ def try_learned_mat():
 
 
 if __name__ == "__main__":
-    main()
-    # get_best_solution()
+    # main()
+    get_best_solution()
     # try_learned_mat()
 

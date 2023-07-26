@@ -12,8 +12,8 @@ from transformer_lens import loading_from_pretrained as loading
 import pickle
 import matplotlib.pyplot as plt
 
-SAVE_MATRICES = False
-COMPARE_MATRICES = True
+SAVE_MATRICES = True
+COMPARE_MATRICES = False
 
 if SAVE_MATRICES:
 
@@ -104,31 +104,43 @@ if SAVE_MATRICES:
     def cuda(x):
         return x.to('cpu') if M1_MAC else x.cuda()
 
-    tokens = cuda(tokens)
-    logits = demo_gpt2(tokens, 
-                    #    average_pos_embed=True, 
-                    #    zero_out_pos=500,
-                    save_attn_patterns_filename='long_repeat_prompt_no_embed',
-                    # no_pos_embed_contribution = True,
-                    no_embed_contribution = True,
-                    )
+    probs = []
 
-    last_logits = logits[-1, -1]  # type: ignore
-    # Apply softmax to convert the logits to probabilities
-    probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
+    for i in range(12):
 
-    print(probabilities)
+        tokens = cuda(tokens)
+        logits = demo_gpt2(tokens, 
+                        #    average_pos_embed=True, 
+                        zero_out_pos=500,
+                        zero_out_specific_head=([2,3],i),
+                        # save_attn_patterns_filename='long_repeat_prompt_no_embed',
+                        # no_pos_embed_contribution = True,
+                        # no_embed_contribution = True,
+                        )
 
-    # Get the indices of the top 10 probabilities
-    topk_indices = np.argpartition(probabilities, -10)[-10:]
-    # Get the top 10 probabilities
-    topk_probabilities = probabilities[topk_indices]
-    # Get the top 10 tokens
-    topk_tokens = [enc.decode([i]) for i in topk_indices]
+        last_logits = logits[-1, -1]  # type: ignore
+        # Apply softmax to convert the logits to probabilities
+        probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
 
-    # Print the top 10 tokens and their probabilities
-    for token, probability in zip(topk_tokens, topk_probabilities):
-        print(f"Token: {token}, Probability: {probability}")
+        probs.append(probabilities[enc.encode('apple')])
+
+        print(probabilities)
+
+        # Get the indices of the top 10 probabilities
+        topk_indices = np.argpartition(probabilities, -10)[-10:]
+        # Get the top 10 probabilities
+        topk_probabilities = probabilities[topk_indices]
+        # Get the top 10 tokens
+        topk_tokens = [enc.decode([i]) for i in topk_indices]
+
+        # Print the top 10 tokens and their probabilities
+        for token, probability in zip(topk_tokens, topk_probabilities):
+            print(f"Token: {token}, Probability: {probability}")
+
+        # break
+
+
+    print(probs)
 
 if COMPARE_MATRICES:
     for i in range(12):
