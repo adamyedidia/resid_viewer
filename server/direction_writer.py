@@ -11,6 +11,7 @@ from server.resid_writer import model_name
 from server.transformer import cache, cfg
 from server.scaler import add_scaler
 from server.utils import get_layer_num_from_resid_type
+from server.settings import NULL_DATASET_IS_OPENWEBTEXT
 import numpy as np
 import argparse
 from typing import Optional
@@ -27,7 +28,9 @@ def main(experiment_name: Optional[str] = None):
             resids = (
                 sess.query(Resid)
                 .filter(Resid.model == model)
-                .filter(*([Resid.dataset == 'catdog'] if experiment_name in ['catdog', 'catdog_dog_only'] else [Resid.dataset == 'openwebtext-10k']))
+                .filter(*([Resid.dataset == 'catdog'] if experiment_name in ['catdog', 'catdog_dog_only'] 
+                          else [Resid.dataset == 'openwebtext-10k'] if not NULL_DATASET_IS_OPENWEBTEXT
+                          else [Resid.dataset == None]))
                 .filter(Resid.layer == layer_num)
                 .filter(Resid.type == key)
                 .filter(Resid.head == head)
