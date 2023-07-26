@@ -10,26 +10,39 @@ import Box from '@mui/material/Box';
 import logo from './logos/cclogo.svg';
 import './App.css'
 
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
+// Create a dark theme
+const navDarkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+  },
+});
+
 const NavBar = () => {
   return (
-    <AppBar position="static" color="inherit">
-      <Toolbar>
-        <Box display="flex" alignItems="center">
-            <Typography variant="h3" component="div" sx={{ fontFamily: "Big Shoulders Inline Text" }}>
+    <ThemeProvider theme={navDarkTheme}>
+      <CssBaseline />
+      <AppBar position="static" color="inherit">
+        <Toolbar>
+          <Box display="flex" alignItems="center">
+            <Typography variant="h3" component="div" sx={{ fontFamily: "Big Shoulders Inline Text", color: 'white' }}>
               Residual
             </Typography>
-          <img src={logo} alt="logo" height="50px" />
-          <Typography variant="h3" component="div" sx={{ fontFamily: "Big Shoulders Inline Text" }}>
-            Viewer
-          </Typography>
-        </Box>
-        <Divider orientation="vertical" flexItem sx={{ mx: 4 }} />
-        <Tabs>
-          <Tab label="Stream Viewer" component={Link} to="/" />
-          <Tab label="Usage Guide" component={Link} to="/usage-guide" />
-        </Tabs>
-      </Toolbar>
-    </AppBar>
+            <img src={logo} alt="logo" height="50px" />
+            <Typography variant="h3" component="div" sx={{ fontFamily: "Big Shoulders Inline Text", color: 'white' }}>
+              Viewer
+            </Typography>
+          </Box>
+          <Divider orientation="vertical" flexItem sx={{ mx: 2 }} />
+          <Tabs>
+            <Tab label="Stream Viewer" component={Link} to="/" />
+            <Tab label="Usage Guide" component={Link} to="/usage-guide" />
+          </Tabs>
+        </Toolbar>
+      </AppBar>
+    </ThemeProvider>
   );
 };
 
