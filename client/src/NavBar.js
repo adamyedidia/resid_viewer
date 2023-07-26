@@ -7,7 +7,7 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import Box from '@mui/material/Box';
-import logo from './logos/cclogo.svg';
+import logo from './logos/cclogo_blue.svg';
 import './App.css'
 
 import { createTheme, ThemeProvider } from '@mui/material/styles';
