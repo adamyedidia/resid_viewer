@@ -179,6 +179,7 @@ const TypeSelector = ({ types, selectedType, onTypeChange }) => {
 const niceTypeName = (badTypeName) => {
   const nameDictionary = {
     'hook_pos_embed': 'Positional Embedding',
+    'hook_embed': 'Token Embedding',
   }
   const newName = nameDictionary?.[badTypeName];
   return newName ? newName : badTypeName;
