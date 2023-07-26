@@ -165,7 +165,8 @@ class Attention(nn.Module):
 
         self.register_buffer("IGNORE", torch.tensor(-1e5, dtype=torch.float32, device="cpu" if M1_MAC else "cuda"))
 
-    def forward(self, normalized_resid_pre, zero_out_pos=None, save_attn_patterns_filename=None):
+    def forward(self, normalized_resid_pre, zero_out_pos=None, save_attn_patterns_filename=None,
+                zero_out_specific_head=None):
         # normalized_resid_pre: [batch, position, d_model]
         if self.cfg.debug: print("Normalized_resid_pre:", normalized_resid_pre.shape)
 
@@ -178,7 +179,14 @@ class Attention(nn.Module):
             "batch query_pos n_heads d_head, batch key_pos n_heads d_head -> batch n_heads query_pos key_pos", q, k)
         attn_scores = attn_scores / math.sqrt(self.cfg.d_head)
 
-        attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
+        if zero_out_specific_head is not None:
+            layer_numbers, head_number = zero_out_specific_head
+            # print('zeroing', head_number, layer_number)
+            attn_scores = self.apply_causal_mask_specific_head_ablated(attn_scores, layer_numbers, head_number,
+                                                                          zero_out_pos=zero_out_pos)
+
+        else:
+            attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
 
         print(zero_out_pos)
 
@@ -219,6 +227,33 @@ class Attention(nn.Module):
         # plt.matshow(mask.detach().numpy())
         # plt.show()        
         attn_scores.masked_fill_(mask, self.IGNORE)
+        return attn_scores
+
+    def apply_causal_mask_specific_head_ablated(self, attn_scores, layer_numbers, head_number, zero_out_pos=None):
+        # attn_scores: [batch, n_heads, query_pos, key_pos]
+        mask_2d = torch.triu(torch.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device), 
+                             diagonal=1).bool()
+                             
+        # Extend the 2D mask to 4D mask: [batch, n_heads, query_pos, key_pos]
+        mask_4d = mask_2d.unsqueeze(0).unsqueeze(0).expand(attn_scores.size(0), 
+                                                            attn_scores.size(1), 
+                                                            -1, 
+                                                            -1)
+
+        print(zero_out_pos is not None and (self.layer_num in layer_numbers or layer_numbers is None))
+        print(self.layer_num)
+        print(head_number)
+
+
+        if zero_out_pos is not None and (self.layer_num in layer_numbers or layer_numbers is None):
+            if head_number is None:
+                print(f'Zeroing out layer {self.layer_num}!')
+                mask_4d[0, :, zero_out_pos, zero_out_pos-1] = 1
+            else:
+                print(f'hello! {head_number}')
+                mask_4d[0, head_number, zero_out_pos, zero_out_pos-1] = 1
+
+        attn_scores.masked_fill_(mask_4d, self.IGNORE)
         return attn_scores
 
     # def apply_zero_out_single_attend(self, attn_scores, pos):
@@ -265,11 +300,13 @@ class TransformerBlock(nn.Module):
         self.ln2 = LayerNorm(cfg)
         self.mlp = MLP(cfg)
 
-    def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False):
+    def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False, 
+                zero_out_specific_head=None):
         # resid_pre [batch, position, d_model]
         normalized_resid_pre = self.ln1(resid_pre)
         attn_out = self.attn(normalized_resid_pre, zero_out_pos=zero_out_pos, 
-                             save_attn_patterns_filename=save_attn_patterns_filename)
+                             save_attn_patterns_filename=save_attn_patterns_filename,
+                             zero_out_specific_head=zero_out_specific_head)
         resid_mid = resid_pre + attn_out
 
         normalized_resid_mid = self.ln2(resid_mid)
@@ -309,7 +346,8 @@ class DemoTransformer(nn.Module):
 
     def forward(self, tokens, average_pos_embed=False, zero_out_pos=None, 
                 save_attn_patterns_filename=False, no_pos_embed_contribution=False,
-                no_embed_contribution=False):
+                no_embed_contribution=False,
+                zero_out_specific_head=None):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -345,7 +383,8 @@ class DemoTransformer(nn.Module):
         # visualize_tensor(residual, "Residual")
         for block in self.blocks:
             residual = block(residual, zero_out_pos=zero_out_pos,
-                             save_attn_patterns_filename=save_attn_patterns_filename)
+                             save_attn_patterns_filename=save_attn_patterns_filename,
+                             zero_out_specific_head=zero_out_specific_head)
             # print(residual)
         normalized_resid_final = self.ln_final(residual)
         # print(normalized_resid_final)
