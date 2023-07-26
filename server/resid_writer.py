@@ -9,14 +9,17 @@ from server.resid import Resid, add_resid
 from server.utils import cuda, enc, get_layer_num_from_resid_type
 from server.transformer import reference_gpt2, model_name
 
+from typing import Optional
+
+
 def write_resids_for_prompt(sess, prompt: Prompt, model: Model, more_commits = False,
-                            verbose = False) -> None:
+                            verbose = False, keys: Optional[list] = None) -> None:
     text = prompt.text
     tokens = reference_gpt2.to_tokens(text)  # type: ignore
     tokens = cuda(tokens)
     _, cache = reference_gpt2.run_with_cache(tokens)
 
-    for key in cache.keys():
+    for key in keys if keys is not None else cache.keys():
         if verbose:
             print(key)
         value = cache[key]
