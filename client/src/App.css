@@ -13,6 +13,14 @@
   }
 }
 
+@font-face {
+  font-family: 'Big Shoulders Inline Text';
+  src: url('./fonts/Big_Shoulders_Inline_Text/BigShouldersInlineText-VariableFont_wght.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
