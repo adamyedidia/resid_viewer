@@ -73,15 +73,12 @@ def get_resids(sess):
         my_resid_prompt_ids = (
             sess.query(Prompt.id)
             .filter(Prompt.added_by_user_id == user.id)
-            .filter(Prompt.dataset == 'openwebtext-10k')
             .order_by(Prompt.created_at.desc())
             .limit(10)
             .all()
         )
     else:
         my_resid_prompt_ids = set()
-
-    print(my_resid_prompt_ids)
 
     resid_prompt_ids = (
         sess.query(Resid.prompt_id)
