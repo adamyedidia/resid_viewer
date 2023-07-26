@@ -59,7 +59,7 @@ if SAVE_MATRICES:
                         'Reply: "rathasoadga" '
                         'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
                         'Reply: "1pdjpm3efe4" '
-                        'Request: "Please repeat the following string exactly: "apple orange" '
+                        'Request: "Please repeat the following string exactly: "John Mary" '
                         'Reply: "')
 
     # reference_text = 'Hello my name is'
@@ -106,13 +106,24 @@ if SAVE_MATRICES:
 
     probs = []
 
-    for i in range(12):
+    all_heads = [(2,2), (2,3), (2,6), (2,7), (2,8), (2,9), (2,10),
+                 (3,2), (3,3), (3,6), (3,7), (3,8), (3,9), (3,10),]
+
+    for i, head in enumerate(all_heads):
 
         tokens = cuda(tokens)
+        heads_to_zero_out = [(2,2), (2,3), (2,6), (2,7), (2,9), (2,10),
+                             (3,2), (3,3), (3,6), (3,7), (3,8), (3,10),]
+        for head_index, head_to_zero_out in enumerate(heads_to_zero_out):
+            if head == head_to_zero_out:
+                del(heads_to_zero_out[head_index])
+
         logits = demo_gpt2(tokens, 
-                        #    average_pos_embed=True, 
-                        zero_out_pos=500,
-                        zero_out_specific_head=([2,3],i),
+                           average_pos_embed=True, 
+                        # zero_out_pos=500,
+                        # zero_out_specific_head=heads_to_zero_out,
+                        # zero_out_specific_head=[*[(2, h) for h in range(12)], *[(3, h) for h in range(12)]],
+                        # zero_out_specific_head=(None,4),
                         # save_attn_patterns_filename='long_repeat_prompt_no_embed',
                         # no_pos_embed_contribution = True,
                         # no_embed_contribution = True,
@@ -122,7 +133,7 @@ if SAVE_MATRICES:
         # Apply softmax to convert the logits to probabilities
         probabilities = torch.nn.functional.softmax(last_logits, dim=0).detach().numpy()
 
-        probs.append(probabilities[enc.encode('apple')])
+        probs.append((head, probabilities[enc.encode('Mary')]))
 
         print(probabilities)
 
@@ -137,10 +148,10 @@ if SAVE_MATRICES:
         for token, probability in zip(topk_tokens, topk_probabilities):
             print(f"Token: {token}, Probability: {probability}")
 
-        # break
+        break
 
 
-    print(probs)
+    print([(head, prob) for (head, prob) in probs])
 
 if COMPARE_MATRICES:
     for i in range(12):

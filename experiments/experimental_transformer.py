@@ -180,15 +180,15 @@ class Attention(nn.Module):
         attn_scores = attn_scores / math.sqrt(self.cfg.d_head)
 
         if zero_out_specific_head is not None:
-            layer_numbers, head_number = zero_out_specific_head
             # print('zeroing', head_number, layer_number)
-            attn_scores = self.apply_causal_mask_specific_head_ablated(attn_scores, layer_numbers, head_number,
-                                                                          zero_out_pos=zero_out_pos)
+            attn_scores = self.apply_causal_mask_specific_head_ablated(attn_scores, 
+                                                                       zero_out_specific_heads=zero_out_specific_head,
+                                                                       zero_out_pos=zero_out_pos)
 
         else:
             attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
 
-        print(zero_out_pos)
+        # print(zero_out_pos)
 
         # if zero_out_pos is not None:
         #     attn_scores = self.apply_zero_out_single_attend(attn_scores, zero_out_pos)
@@ -229,29 +229,34 @@ class Attention(nn.Module):
         attn_scores.masked_fill_(mask, self.IGNORE)
         return attn_scores
 
-    def apply_causal_mask_specific_head_ablated(self, attn_scores, layer_numbers, head_number, zero_out_pos=None):
+    def apply_causal_mask_specific_head_ablated(self, attn_scores, zero_out_specific_heads, zero_out_pos=None):
         # attn_scores: [batch, n_heads, query_pos, key_pos]
         mask_2d = torch.triu(torch.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device), 
                              diagonal=1).bool()
                              
         # Extend the 2D mask to 4D mask: [batch, n_heads, query_pos, key_pos]
-        mask_4d = mask_2d.unsqueeze(0).unsqueeze(0).expand(attn_scores.size(0), 
-                                                            attn_scores.size(1), 
-                                                            -1, 
-                                                            -1)
+        mask_4d = mask_2d.repeat(attn_scores.size(0), 
+                                 attn_scores.size(1), 
+                                 1, 
+                                 1)
 
-        print(zero_out_pos is not None and (self.layer_num in layer_numbers or layer_numbers is None))
-        print(self.layer_num)
-        print(head_number)
+        # print(zero_out_pos is not None and (layer_numbers is None or self.layer_num in layer_numbers))
+        # print(self.layer_num)
+        # print(head_numbers)
 
+        if zero_out_pos is not None:
+            for layer_num, head_num in zero_out_specific_heads:
+                if head_num is None and layer_num == self.layer_num:
+                    print(f'Zeroing out layer {self.layer_num}!')
+                    mask_4d[0, :, zero_out_pos, zero_out_pos-1] = 1
+                else:
+                    if layer_num == self.layer_num:
+                        mask_4d[0, head_num, zero_out_pos, zero_out_pos-1] = 1
 
-        if zero_out_pos is not None and (self.layer_num in layer_numbers or layer_numbers is None):
-            if head_number is None:
-                print(f'Zeroing out layer {self.layer_num}!')
-                mask_4d[0, :, zero_out_pos, zero_out_pos-1] = 1
-            else:
-                print(f'hello! {head_number}')
-                mask_4d[0, head_number, zero_out_pos, zero_out_pos-1] = 1
+        # import matplotlib.pyplot as plt
+        # for i in range(12):
+        #     plt.matshow(mask_4d[0][i].detach().numpy())
+        #     plt.show()
 
         attn_scores.masked_fill_(mask_4d, self.IGNORE)
         return attn_scores
