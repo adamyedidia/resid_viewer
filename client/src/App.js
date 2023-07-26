@@ -175,21 +175,32 @@ const SlidersArray = ({ sliders, setSliders, directions }) => {
   );
 };
 
-const TypeSelector = ({ types, selectedType, onTypeChange }) => (
-  <Grid item xs={12} md={4}>
-    <FormControl variant="filled" fullWidth style={{backgroundColor: '#3a3a3a'}}>
-      <InputLabel style={{ color: 'white' }}>Type</InputLabel>
-      <Select
-        value={selectedType}
-        onChange={(event) => onTypeChange(event.target.value)}
-      >
-        {types.map((type) => <MenuItem value={type} key={type}>
-        <Typography style={{ color: 'white' }}>{type}</Typography>
-        </MenuItem>)}
-      </Select>
-    </FormControl>
-  </Grid>
-);
+const TypeSelector = ({ types, selectedType, onTypeChange }) => {
+const niceTypeName = (badTypeName) => {
+  const nameDictionary = {
+    'hook_pos_embed': 'Positional Embedding',
+  }
+  const newName = nameDictionary?.[badTypeName];
+  return newName ? newName : badTypeName;
+};
+
+
+  return (
+      <Grid item xs={12} md={4}>
+        <FormControl variant="filled" fullWidth style={{backgroundColor: '#3a3a3a'}}>
+          <InputLabel style={{ color: 'white' }}>Type</InputLabel>
+          <Select
+            value={selectedType}
+            onChange={(event) => onTypeChange(event.target.value)}
+          >
+            {types.map((type) => <MenuItem value={type} key={type}>
+            <Typography style={{ color: 'white' }}>{niceTypeName(type)}</Typography>
+            </MenuItem>)}
+          </Select>
+        </FormControl>
+      </Grid>
+  );
+};
 
 const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
   <Grid item xs={12} md={4}>
