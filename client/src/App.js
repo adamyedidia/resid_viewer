@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import {BrowserRouter as Router, Route, Routes,} from 'react-router-dom';
+import NavBar from './NavBar';
 import {
   Button,
   Box,
@@ -10,7 +12,7 @@ import {
   Paper,
   TextField,
   Slider,
-  Card, CardHeader, CardContent
+  Card, CardContent
 } from '@mui/material';
 import axios from 'axios';
 import { gpt2_types } from './gpt2_types';
@@ -514,6 +516,31 @@ const AddYourOwnPromptField = ({username, fetchResidsAndDirection}) => {
 }
 
 const App = () => {
+  return (
+    <Router>
+      <NavBar />
+      <Routes>
+        <Route path="/" element={<MainStreamViewerPage />} />
+        <Route path="/usage-guide" element={<UsageGuidePage />} />
+      </Routes>
+    </Router>
+  );
+};
+
+const UsageGuidePage = () => {
+  return(
+      <>
+        <Card>
+          <CardContent>
+            Todo
+          </CardContent>
+        </Card>
+      </>
+  );
+}
+
+
+const MainStreamViewerPage = () => {
   const [directionSliderDialogOpen, setDirectionSliderDialogOpen] = useState(false);
   const [selectedType, setSelectedType] = useState("");
   const [selectedHead, setSelectedHead] = useState("");
