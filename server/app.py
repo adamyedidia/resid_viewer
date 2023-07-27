@@ -67,8 +67,10 @@ def get_resids(sess):
 
     layer = get_layer_num_from_resid_type(type)
 
+    print(f"username = {username}")
     if username:
         user = add_or_get_user(sess, username)
+        print(f"user = {user}")
 
         my_resid_prompt_ids = (
             sess.query(Prompt.id)
@@ -77,6 +79,7 @@ def get_resids(sess):
             .limit(10)
             .all()
         )
+        print(f"my_resid_prompt_ids = {my_resid_prompt_ids}")
     else:
         my_resid_prompt_ids = set()
 
