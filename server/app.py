@@ -421,5 +421,24 @@ def add_prompt(sess):
     return jsonify({'success': True})
 
 
+@app.route('/api/prompts', methods=['POST'])
+@sess_decorator
+def run_intervention(sess):
+    data = request.get_json()
+    prompt = data['prompt']
+
+    model_name = data['model_name']
+    type = data['type']
+    head = parse_optional_int(data['head'])
+    direction = data['direction']
+
+    username = data['username']
+
+    # TODO: (Andrea) run intervention in direction on the type and head
+
+    return jsonify({'success': True})
+
+
+
 if __name__ == '__main__':
     app.run(debug=True)

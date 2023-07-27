@@ -26,6 +26,8 @@ import Dialog from '@mui/material/Dialog';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash } from 'react-icons/fa';
+import Popover from '@mui/material/Popover';
+
 
 const NUM_SLIDERS = 30;
 
@@ -387,12 +389,84 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
   const color = colorScale(normalizedDotProduct).hex();
   const textColor = chroma.contrast(color, 'white') > chroma.contrast(color, 'black') ? 'white' : 'black';
 
+  const predictedNextTokens = resid.predictedNextTokens;
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+  const [isOverPopover, setIsOverPopover] = React.useState(false);
+  const open = Boolean(anchorEl) && predictedNextTokens && Object.keys(predictedNextTokens).length > 0;
+  const id = open ? 'simple-popover' : undefined;
+
+  const handleMouseEnterBox = (event) => {
+    console.log('Mouse entered box'); // For debugging
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMouseLeaveBox = () => {
+    console.log('Mouse left box'); // For debugging
+    if (!isOverPopover) {
+      setAnchorEl(null);
+    }
+  };
+
+  const handleMouseEnterPopover = () => {
+    console.log('Mouse entered popover'); // For debugging
+    setIsOverPopover(true);
+  };
+
+  const handleMouseLeavePopover = () => {
+    console.log('Mouse left popover'); // For debugging
+    setIsOverPopover(false);
+    setAnchorEl(null);
+  };
+
+  // Convert the predictedNextTokens object to an array and sort it by value
+  const sortedTokens = predictedNextTokens
+    ? Object.entries(predictedNextTokens).sort((a, b) => b[1] - a[1])
+    : [];
+
   return (
-    <Box px={0.1} py={0.2} m={0} bgcolor={color} color={textColor} component={Paper} sx={{borderRadius: 0, border: '1px solid black'}}>
-      <Typography variant="body1"><pre style={{fontFamily: 'Times New Roman', margin: 0}}>{resid.decodedToken}</pre></Typography>
-    </Box>
+    <>
+      <Box
+        px={0.1}
+        py={0.2}
+        m={0}
+        bgcolor={color}
+        color={textColor}
+        component={Paper}
+        sx={{borderRadius: 0, border: '1px solid black'}}
+        onMouseEnter={handleMouseEnterBox}
+        onMouseLeave={handleMouseLeaveBox}
+      >
+        <Typography variant="body1"><pre style={{fontFamily: 'Times New Roman', margin: 0}}>{resid.decodedToken}</pre></Typography>
+      </Box>
+      <Popover
+        id={id}
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleMouseLeavePopover}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left',
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left',
+        }}
+
+        onMouseEnter={handleMouseEnterPopover}
+        onMouseLeave={handleMouseLeavePopover}
+      >
+        <Box p={2}>
+          {sortedTokens.map(([token, probability]) => (
+            <Typography key={token}>{token}: {probability}</Typography>
+          ))}
+        </Box>
+      </Popover>
+    </>
   );
 };
+
+
 
 const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
   <Box display="flex" flexWrap="wrap">
