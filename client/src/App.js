@@ -452,13 +452,13 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
           vertical: 'top',
           horizontal: 'left',
         }}
-
         onMouseEnter={handleMouseEnterPopover}
         onMouseLeave={handleMouseLeavePopover}
       >
         <Box p={2}>
+          <Typography variant="h6">Predicted token after "{resid.decodedToken}":</Typography>
           {sortedTokens.map(([token, probability]) => (
-            <Typography key={token}>{token}: {probability}</Typography>
+            <Typography key={token}>"{token}": {probability}</Typography>
           ))}
         </Box>
       </Popover>
@@ -628,7 +628,7 @@ const UsageGuidePage = () => {
 
 const MainStreamViewerPage = () => {
   const [directionSliderDialogOpen, setDirectionSliderDialogOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState("hook_pos_embed");
+  const [selectedType, setSelectedType] = useState("ln_final.hook_normalized");
   const [selectedHead, setSelectedHead] = useState("");
   const [selectedComponentIndex, setSelectedComponentIndex] = useState("0");
   const [resids, setResids] = useState([]);
