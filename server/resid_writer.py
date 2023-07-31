@@ -107,6 +107,7 @@ def main():
     prompts_to_populate = (
         sess.query(Prompt)
         .filter(Prompt.length_in_tokens == 30)
+        # .filter(Prompt.length_in_tokens == 750)
         # .filter(Prompt.length_in_tokens == 1023)
         .all()
     )

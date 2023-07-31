@@ -195,18 +195,31 @@ class Attention(nn.Module):
 
         pattern = attn_scores.softmax(dim=-1)  # [batch, n_head, query_pos, key_pos]
 
-
-        for i in range(12):
-            if save_attn_patterns_filename:
-                pickle.dump(pattern[0][i].detach().numpy(), 
-                            open(f'pickle_files/{save_attn_patterns_filename}_L{self.layer_num}_H{i}.p', 'wb'))
-            # import matplotlib.pyplot as plt
-            # plt.matshow(pattern[0][i].detach().numpy(), vmin=0, vmax=0.1)
-            # plt.colorbar()
-            # plt.show()
+        print(p)
 
         v = einsum("batch key_pos d_model, n_heads d_model d_head -> batch key_pos n_heads d_head",
                    normalized_resid_pre, self.W_V) + self.b_V
+
+        for i in range(12):
+            import numpy as np
+            # scaler_v = np.transpose(np.array([[np.linalg.norm(v[0][j][i].detach().numpy()) for j in range(v.shape[1])] for _ in range(v.shape[1])]))
+            # scaler_v = np.array([[np.linalg.norm(v[0][j][i].detach().numpy()) for j in range(v.shape[1])] for _ in range(v.shape[1])])
+            if save_attn_patterns_filename:
+                pickle.dump(pattern[0][i].detach().numpy(), 
+                            open(f'pickle_files/{save_attn_patterns_filename}_L{self.layer_num}_H{i}.p', 'wb'))
+            print(f'Layer {self.layer_num}, Head {i}')
+            import matplotlib.pyplot as plt
+            # plt.matshow(scaler_v)
+            # plt.colorbar()
+            # plt.show()
+
+            # print(v.shape)
+            # plt.matshow(pattern[0][i].detach().numpy(), vmin=0, vmax=0.5)
+            # plt.colorbar()
+            # plt.show()
+
+            # plt.matshow(np.multiply(pattern[0][i].detach().numpy(), scaler_v), vmin=0, vmax=0.4)
+            # plt.show()
 
         z = einsum("batch n_heads query_pos key_pos, batch key_pos n_heads d_head -> batch query_pos n_heads d_head",
                    pattern, v)
