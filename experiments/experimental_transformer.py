@@ -12,6 +12,7 @@ from server.utils import M1_MAC, cuda
 from dataclasses import dataclass
 import math
 import pickle
+import numpy as np
 
 model_name = "gpt2-small"
 # model_name = "pythia-70m"
@@ -82,6 +83,50 @@ def get_basic_config(model_name: str, **kwargs) -> Config:
 
 
 cfg = get_basic_config(model_name)
+
+
+next_token_heads = {}
+
+
+def permute_list(input_list):
+    if isinstance(input_list, np.ndarray) and input_list.shape[0] == 1:
+        input_list = input_list[0]
+    input_list = [i for i in input_list]
+    # First, we make sure the list is a multiple of 3 in length by appending None if needed
+
+    # Create the output list
+    output_list = []
+
+    # Iterate over the input list in steps of 3
+    for i in range(0, len(input_list), 3):
+        # Append the elements in the desired order
+        if i + 2 < len(input_list):
+            output_list.append(input_list[i + 1])  # Second element
+            output_list.append(input_list[i])      # First element
+            output_list.append(input_list[i + 2])  # Third element
+        
+    while len(output_list) < len(input_list):
+        output_list.append(input_list[len(output_list)])
+
+    return output_list
+
+
+import numpy as np
+
+def average_rows(matrix, row_num):
+    avg_matrix = [matrix[0]]  # add the first row to the new matrix
+
+    for i in range(1, len(matrix), row_num):
+        dist_out = min(i+row_num, len(matrix)) - i
+        group = matrix[i:i+dist_out]  # take the next row_num rows or whatever's left
+        avg_row = np.mean(group, axis=0)  # compute the average
+
+        if len(group) == row_num:
+            avg_matrix.extend([avg_row]*row_num)  # repeat the average row row_num times
+        else:
+            avg_matrix.extend([avg_row]*dist_out)  # just append the remaining rows
+
+    return np.array(avg_matrix)
 
 
 class LayerNorm(nn.Module):
@@ -195,8 +240,6 @@ class Attention(nn.Module):
 
         pattern = attn_scores.softmax(dim=-1)  # [batch, n_head, query_pos, key_pos]
 
-        print(p)
-
         v = einsum("batch key_pos d_model, n_heads d_model d_head -> batch key_pos n_heads d_head",
                    normalized_resid_pre, self.W_V) + self.b_V
 
@@ -213,11 +256,94 @@ class Attention(nn.Module):
             # plt.colorbar()
             # plt.show()
 
+            def extract_submatrix(matrix, start_row, start_col):
+                """
+                Extracts a submatrix from the given matrix starting from (start_row, start_col).
+                The size of the submatrix is 50x50.
+
+                Args:
+                    matrix (list): A 2D list representing the matrix.
+                    start_row (int): The row index to start the submatrix.
+                    start_col (int): The column index to start the submatrix.
+
+                Returns:
+                    submatrix (list): A 2D list representing the 50x50 submatrix.
+                """
+                return np.array([row[start_col : start_col + 50] for row in matrix[start_row : start_row + 50]])
+
+            def exclude_first_row_and_column(matrix):
+                return np.array([row[1:] for row in matrix[1:]])
+
+            def plot_and_find_largest_mean_diagonal(matrix):
+                # Store all diagonals and their means
+                diagonals = []
+                means = []
+                
+                # Loop over all possible diagonals
+                rows, cols = matrix.shape
+                for col_start in range(cols - 1, -1, -1):
+                    diag = matrix.diagonal(offset=col_start)
+                    diagonals.append(diag)
+                    means.append(np.mean(diag))
+                for row_start in range(1, rows):
+                    diag = matrix.diagonal(offset=-row_start)
+                    diagonals.append(diag)
+                    means.append(np.mean(diag))
+
+                # Identify the diagonal with the highest mean and the second-biggest mean
+                max_mean = max(means)
+                max_mean_index = means.index(max_mean)
+                means[max_mean_index] = -1  # Setting the maximum mean to a negative value to find the second-maximum
+                second_max_mean = max(means)
+                second_max_mean_index = means.index(second_max_mean)
+                means[max_mean_index] = max_mean  # Resetting the maximum mean to its original value
+                
+                # Calculate the ratio between the second-biggest mean diagonal and the biggest mean diagonal
+                ratio = second_max_mean / max_mean
+
+                # Plotting mean of all diagonals
+                # fig, ax = plt.subplots(figsize=(10,10))
+                # for j, mean in enumerate(means):
+                #     if j == max_mean_index:
+                #         ax.plot([j], [mean], 'bo', label=f"Diagonal {j} (Max Mean)", markersize=10)
+                #     elif j == second_max_mean_index:
+                #         ax.plot([j], [mean], 'go', label=f"Diagonal {j} (Second Max Mean)", markersize=10)
+                #     else:
+                #         ax.plot([j], [mean], 'ro', alpha=0.5)
+
+                if max_mean_index == matrix.shape[0]:
+                    next_token_heads[(self.layer_num, i)] = ratio
+
+
+                # Show the legend and labels for the plot
+                # ax.legend()
+                # plt.xlabel('Diagonal')
+                # plt.ylabel('Mean')
+                # plt.show()
+
+                # Print diagonal indices with the highest mean and the second-biggest mean
+                print("Diagonal with the highest mean:", max_mean_index)
+                print("Diagonal with the second-biggest mean:", second_max_mean_index)
+                print("Ratio between the second-biggest mean and the biggest mean:", ratio)
+
             # print(v.shape)
-            # plt.matshow(pattern[0][i].detach().numpy(), vmin=0, vmax=0.5)
+            # print(pattern.shape)
+            # print(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150).shape)
+            # print(exclude_first_row_and_column(pattern[0][i].detach().numpy()).shape)
+            if (self.layer_num, i) in ((4, 11), (5, 6), (3, 3), (2, 2)):
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150), vmin=0, vmax=1.0)
+                plt.colorbar()
+                plt.show()
+
+                plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=1.0)
+                plt.colorbar()
+                plt.show()                
+
+            plot_and_find_largest_mean_diagonal(exclude_first_row_and_column(pattern[0][i].detach().numpy()))
+
+            # plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=0.5)
             # plt.colorbar()
             # plt.show()
-
             # plt.matshow(np.multiply(pattern[0][i].detach().numpy(), scaler_v), vmin=0, vmax=0.4)
             # plt.show()
 
@@ -362,10 +488,11 @@ class DemoTransformer(nn.Module):
         self.ln_final = LayerNorm(cfg)
         self.unembed = Unembed(cfg)
 
-    def forward(self, tokens, average_pos_embed=False, zero_out_pos=None, 
+    def forward(self, tokens, average_pos_embed_in_blocks=None, zero_out_pos=None, 
                 save_attn_patterns_filename=False, no_pos_embed_contribution=False,
                 no_embed_contribution=False,
-                zero_out_specific_head=None):
+                zero_out_specific_head=None, 
+                permute_pos_embed=False):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -375,19 +502,17 @@ class DemoTransformer(nn.Module):
 
         print(pos_embed.shape)
 
-        if average_pos_embed:
+        if average_pos_embed_in_blocks is not None:
+            arr = np.array(average_rows(pos_embed.detach().numpy()[0], average_pos_embed_in_blocks))
+            pos_embed = torch.from_numpy(np.reshape(arr, (1, arr.shape[0], arr.shape[1])))
 
-            first_part = pos_embed[:, :-10, :]
-            last_part = pos_embed[:, -10:, :]
+            import matplotlib.pyplot as plt
+            plt.matshow(arr)
+            plt.show()
 
-            mean_of_last_10 = last_part.mean(dim=1).unsqueeze(1)
-
-            duplicated_mean = mean_of_last_10.repeat_interleave(last_part.shape[1], dim=1)
-
-            # print(first_part.shape)
-            # print(mean_of_last_10.shape)
-
-            pos_embed = torch.cat((first_part, duplicated_mean), dim=1)
+        elif permute_pos_embed:
+            arr = np.array(permute_list(pos_embed.detach().numpy()[0]))
+            pos_embed = torch.from_numpy(np.reshape(arr, (1, arr.shape[0], arr.shape[1])))
 
         # print(pos_embed.shape)
         # visualize_tensor(pos_embed, "Positional Embedding")
@@ -409,4 +534,7 @@ class DemoTransformer(nn.Module):
         logits = self.unembed(normalized_resid_final)
         # print(logits)
         # logits have shape [batch, position, logits]
+        l = [(k, v) for (k, v) in next_token_heads.items()]
+        print(sorted(l, key=lambda x: x[1]))
+
         return logits

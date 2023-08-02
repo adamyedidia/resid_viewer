@@ -17,60 +17,60 @@ COMPARE_MATRICES = False
 
 if SAVE_MATRICES:
 
-    # reference_text = ('Request: Please repeat the following string exactly: "hello" '
-    #                     'Reply: "hello". '
-    #                     'Request: "Please repeat the following string exactly: "gorapopefm" '
-    #                     'Reply: "gorapopefm" '
-    #                     'Request: "Please repeat the following string exactly: "adfgpinaie" '
-    #                     'Reply: "adfgpinaie" '
-    #                     'Request: "Please repeat the following string exactly: " poaspdmfpm" '
-    #                     'Reply: " poaspdmfpm" '
-    #                     'Request: "Please repeat the following string exactly: "wplmedpmdp" '
-    #                     'Reply: "wplmedpmdp" '
-    #                     'Request: "Please repeat the following string exactly: "pvofampovm" '
-    #                     'Reply: "pvofampovm" '
-    #                     'Request: "Please repeat the following string exactly: "poemfvpoe" '
-    #                     'Reply: "poemfvpoe" '
-    #                     'Request: "Please repeat the following string exactly: "vfavn" '
-    #                     'Reply: "vfavn" '
-    #                     'Request: "Please repeat the following string exactly: "sopqmx" '
-    #                     'Reply: "sopqmx" '
-    #                     'Request: "Please repeat the following string exactly: "france" '
-    #                     'Reply: "france" '
-    #                     'Request: "Please repeat the following string exactly: "vilion" '
-    #                     'Reply: "pvofampovm" ' 
-    #                     'Request: "Please repeat the following string exactly: " jack" '
-    #                     'Reply: " jack" '
-    #                     'Request: "Please repeat the following string exactly: "aervaxv" '
-    #                     'Reply: "aervaxv" '
-    #                     'Request: "Please repeat the following string exactly: " poem" '
-    #                     'Reply: " poem" '
-    #                     'Request: "Please repeat the following string exactly: " Reddit" '
-    #                     'Reply: " Reddit" '
-    #                     'Request: "Please repeat the following string exactly: "irnnrf" '
-    #                     'Reply: "irnnrf" '
-    #                     'Request: "Please repeat the following string exactly: "wepoc" '
-    #                     'Reply: "wepoc" '
-    #                     'Request: "Please repeat the following string exactly: "propmfpm" '
-    #                     'Reply: "propmfpm" '
-    #                     'Request: "Please repeat the following string exactly: " Germany" '
-    #                     'Reply: " Germany""'
-    #                     'Request: "Please repeat the following string exactly: "rathasoadga" '
-    #                     'Reply: "rathasoadga" '
-    #                     'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
-    #                     'Reply: "1pdjpm3efe4" '
-    #                     'Request: "Please repeat the following string exactly: "Mary John" '
-    #                     'Reply: "')
+    reference_text = ('Request: Please repeat the following string exactly: "hello" '
+                        'Reply: "hello". '
+                        'Request: "Please repeat the following string exactly: "gorapopefm" '
+                        'Reply: "gorapopefm" '
+                        'Request: "Please repeat the following string exactly: "adfgpinaie" '
+                        'Reply: "adfgpinaie" '
+                        'Request: "Please repeat the following string exactly: " poaspdmfpm" '
+                        'Reply: " poaspdmfpm" '
+                        'Request: "Please repeat the following string exactly: "wplmedpmdp" '
+                        'Reply: "wplmedpmdp" '
+                        'Request: "Please repeat the following string exactly: "pvofampovm" '
+                        'Reply: "pvofampovm" '
+                        'Request: "Please repeat the following string exactly: "poemfvpoe" '
+                        'Reply: "poemfvpoe" '
+                        'Request: "Please repeat the following string exactly: "vfavn" '
+                        'Reply: "vfavn" '
+                        'Request: "Please repeat the following string exactly: "sopqmx" '
+                        'Reply: "sopqmx" '
+                        'Request: "Please repeat the following string exactly: "france" '
+                        'Reply: "france" '
+                        'Request: "Please repeat the following string exactly: "vilion" '
+                        'Reply: "pvofampovm" ' 
+                        'Request: "Please repeat the following string exactly: " jack" '
+                        'Reply: " jack" '
+                        'Request: "Please repeat the following string exactly: "aervaxv" '
+                        'Reply: "aervaxv" '
+                        'Request: "Please repeat the following string exactly: " poem" '
+                        'Reply: " poem" '
+                        'Request: "Please repeat the following string exactly: " Reddit" '
+                        'Reply: " Reddit" '
+                        'Request: "Please repeat the following string exactly: "irnnrf" '
+                        'Reply: "irnnrf" '
+                        'Request: "Please repeat the following string exactly: "wepoc" '
+                        'Reply: "wepoc" '
+                        'Request: "Please repeat the following string exactly: "propmfpm" '
+                        'Reply: "propmfpm" '
+                        'Request: "Please repeat the following string exactly: " Germany" '
+                        'Reply: " Germany""'
+                        'Request: "Please repeat the following string exactly: "rathasoadga" '
+                        'Reply: "rathasoadga" '
+                        'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
+                        'Reply: "1pdjpm3efe4" '
+                        'Request: "Please repeat the following string exactly: " John Mary Mary Alfred" '
+                        'Reply: " John Mary Mary')
 
-    reference_text = (
-        """Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.
+#     reference_text = (
+#         """Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.
 
-Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.
+# Now we are engaged in a great civil war, testing whether that nation, or any nation so conceived and so dedicated, can long endure. We are met on a great battle-field of that war. We have come to dedicate a portion of that field, as a final resting place for those who here gave their lives that that nation might live. It is altogether fitting and proper that we should do this.
 
-But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we say here, but it can never forget what they did here. It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom -- and that government of the people, by the people, for the people, shall not perish from the earth.
+# But, in a larger sense, we can not dedicate -- we can not consecrate -- we can not hallow -- this ground. The brave men, living and dead, who struggled here, have consecrated it, far above our poor power to add or detract. The world will little note, nor long remember what we say here, but it can never forget what they did here. It is for us the living, rather, to be dedicated here to the unfinished work which they who fought here have thus far so nobly advanced. It is rather for us to be here dedicated to the great task remaining before us -- that from these honored dead we take increased devotion to that cause for which they gave the last full measure of devotion -- that we here highly resolve that these dead shall not have died in vain -- that this nation, under God, shall have a new birth of freedom -- and that government of the people, by the people, for the people, shall not perish from the earth.
 
-"""
-    )
+# """
+#     )
 
     # reference_text = 'Hello my name is'
 
@@ -130,6 +130,7 @@ But, in a larger sense, we can not dedicate -- we can not consecrate -- we can n
 
         logits = demo_gpt2(tokens, 
                         #    average_pos_embed=True, 
+                        permute_pos_embed=True,
                         # zero_out_pos=500,
                         # zero_out_specific_head=heads_to_zero_out,
                         # zero_out_specific_head=[*[(2, h) for h in range(12)], *[(3, h) for h in range(12)]],
