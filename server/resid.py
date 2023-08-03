@@ -131,7 +131,8 @@ def add_resid(sess,
               token_position: int,
               head: Optional[int] = None,
               no_commit: bool = False,
-              skip_dedupe_check: bool = False) -> None:
+              skip_dedupe_check: bool = False,
+              dataset: Optional[str] = None) -> None:
     
     assert len(arr.shape) == 1, "Resid must be 1-dimensional"
 
@@ -142,6 +143,7 @@ def add_resid(sess,
         Resid.type == type,
         Resid.token_position == token_position,
         Resid.head == head,
+        Resid.dataset == (dataset or prompt.dataset),  # type: ignore
     ))).scalar()):
         print(f"Resid already exists")
         return
@@ -156,7 +158,7 @@ def add_resid(sess,
         type=type,
         token_position=token_position,
         head=head,
-        dataset=prompt.dataset,
+        dataset=dataset or prompt.dataset,  # type: ignore
         dimension=arr.shape[0],
     )
 

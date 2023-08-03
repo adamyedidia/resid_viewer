@@ -134,9 +134,9 @@ The decision concerned two consolidated cases, Arizona Free Enterprise Club v. B
     # reference_text = modified_prompt1_text
 
     # reference_text = ' a' * 500
-    reference_text = (' a b') * 200
+    # reference_text = (' a b') * 200
 
-    # reference_text = prompt1.text
+    reference_text = prompt1.text
 
     print(prompt1.text)
 

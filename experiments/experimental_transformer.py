@@ -1,4 +1,6 @@
 import sys
+
+from server.model import Model
 sys.path.append('..')
 
 import torch.nn as nn
@@ -9,6 +11,8 @@ from transformer_lens import HookedTransformer
 from transformer_lens import loading_from_pretrained as loading
 from transformer_lens.utils import gelu_new
 from server.utils import M1_MAC, cuda
+from server.database import SessionLocal
+from server.resid import add_resid
 from dataclasses import dataclass
 import math
 import pickle
@@ -231,6 +235,8 @@ class Attention(nn.Module):
                                                                        zero_out_pos=zero_out_pos)
 
         else:
+            original_attn_scores = attn_scores.clone()
+
             attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
 
         # print(zero_out_pos)
@@ -331,6 +337,10 @@ class Attention(nn.Module):
             # print(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150).shape)
             # print(exclude_first_row_and_column(pattern[0][i].detach().numpy()).shape)
             if (self.layer_num, i) in ((4, 11), (5, 6), (3, 3), (2, 2)):
+                plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()))
+                plt.colorbar()
+                plt.show()       
+
                 plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150), vmin=0, vmax=1.0)
                 plt.colorbar()
                 plt.show()
@@ -444,10 +454,57 @@ class TransformerBlock(nn.Module):
         self.ln2 = LayerNorm(cfg)
         self.mlp = MLP(cfg)
 
+        self.layer_num = layer_num
+
     def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False, 
-                zero_out_specific_head=None):
+                zero_out_specific_head=None, write_resid_keys_for_prompt=None):
         # resid_pre [batch, position, d_model]
+        sess, dataset, prompt, keys = None, None, None, None
+        if write_resid_keys_for_prompt is not None:
+            sess, dataset, prompt, keys = write_resid_keys_for_prompt
+
+        if keys is not None and (key := f'blocks.{self.layer_num}.hook_resid_pre') in keys:
+            model = sess.query(Model).filter(Model.name == model_name).first()
+
+            for i in range(resid_pre.shape[1]):
+                assert prompt is not None
+
+                add_resid(
+                    sess,
+                    resid_pre[0][i].detach().numpy(),
+                    model,
+                    prompt,
+                    self.layer_num,
+                    key,
+                    i,
+                    None,
+                    no_commit=False,
+                    skip_dedupe_check=False,
+                    dataset=dataset,
+                )  
+
         normalized_resid_pre = self.ln1(resid_pre)
+
+        if keys is not None and (key := f'blocks.{self.layer_num}.ln1.hook_normalized') in keys:
+            model = sess.query(Model).filter(Model.name == model_name).first()
+
+            for i in range(resid_pre.shape[1]):
+                assert prompt is not None
+
+                add_resid(
+                    sess,
+                    resid_pre[0][i].detach().numpy(),
+                    model,
+                    prompt,
+                    self.layer_num,
+                    key,
+                    i,
+                    None,
+                    no_commit=False,
+                    skip_dedupe_check=False,
+                    dataset=dataset,
+                )  
+
         attn_out = self.attn(normalized_resid_pre, zero_out_pos=zero_out_pos, 
                              save_attn_patterns_filename=save_attn_patterns_filename,
                              zero_out_specific_head=zero_out_specific_head)
@@ -492,7 +549,8 @@ class DemoTransformer(nn.Module):
                 save_attn_patterns_filename=False, no_pos_embed_contribution=False,
                 no_embed_contribution=False,
                 zero_out_specific_head=None, 
-                permute_pos_embed=False):
+                permute_pos_embed=False,
+                write_resid_keys_for_prompt=None):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -527,7 +585,8 @@ class DemoTransformer(nn.Module):
         for block in self.blocks:
             residual = block(residual, zero_out_pos=zero_out_pos,
                              save_attn_patterns_filename=save_attn_patterns_filename,
-                             zero_out_specific_head=zero_out_specific_head)
+                             zero_out_specific_head=zero_out_specific_head,
+                             write_resid_keys_for_prompt=write_resid_keys_for_prompt)
             # print(residual)
         normalized_resid_final = self.ln_final(residual)
         # print(normalized_resid_final)
