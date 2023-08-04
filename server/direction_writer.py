@@ -21,6 +21,9 @@ def main(experiment_name: Optional[str] = None):
     sess = SessionLocal()
     model = sess.query(Model).filter(Model.name == model_name).one_or_none()
 
+    if not model:
+        raise Exception('No model found')
+
     for key in ['blocks.0.hook_attn_out'] if experiment_name in ['catdog', 'catdog_dog_only'] else cache.keys():
         layer_num = get_layer_num_from_resid_type(key)
 

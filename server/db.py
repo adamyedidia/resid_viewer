@@ -9,3 +9,4 @@ import server.direction_description
 import server.prompt
 import server.scaler
 import server.dataset
+import server.extended_pos_embed

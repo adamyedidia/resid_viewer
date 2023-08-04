@@ -3,6 +3,7 @@ import tiktoken
 import random
 
 from server.settings import M1_MAC
+import numpy as np
 
 enc = tiktoken.get_encoding('r50k_base')
 
@@ -42,3 +43,7 @@ def lists_are_equal(l1, l2):
 
 def has_unique_tokenization(l: list[int]) -> bool:
     return lists_are_equal(l, enc.encode(enc.decode(l)))
+
+
+def mean_subtract(mat: np.ndarray) -> np.ndarray:
+    return mat - mat.mean(axis=0)
