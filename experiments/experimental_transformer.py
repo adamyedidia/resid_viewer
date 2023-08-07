@@ -1,6 +1,5 @@
 import sys
 
-from server.model import Model
 sys.path.append('..')
 
 import torch.nn as nn
@@ -11,6 +10,8 @@ from transformer_lens import HookedTransformer
 from transformer_lens import loading_from_pretrained as loading
 from transformer_lens.utils import gelu_new
 from server.utils import M1_MAC, cuda
+from server.extended_pos_embed import get_extended_pos_embed_matrix
+from server.model import Model
 from server.database import SessionLocal
 from server.resid import add_resid
 from dataclasses import dataclass
@@ -235,10 +236,13 @@ class Attention(nn.Module):
                                                                        zero_out_pos=zero_out_pos)
 
         else:
+            # if self.layer_num in [2, 3]:
+            #     import numpy as np
+            #     attn_scores += torch.from_numpy(np.reshape(np.eye(attn_scores.shape[-1], k=-2), (1, attn_scores.shape[-1], attn_scores.shape[-1])) * 2)
+
             original_attn_scores = attn_scores.clone()
 
             attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
-
         # print(zero_out_pos)
 
         # if zero_out_pos is not None:
@@ -262,7 +266,7 @@ class Attention(nn.Module):
             # plt.colorbar()
             # plt.show()
 
-            def extract_submatrix(matrix, start_row, start_col):
+            def extract_submatrix(matrix, start_row, start_col, extra=50):
                 """
                 Extracts a submatrix from the given matrix starting from (start_row, start_col).
                 The size of the submatrix is 50x50.
@@ -275,7 +279,7 @@ class Attention(nn.Module):
                 Returns:
                     submatrix (list): A 2D list representing the 50x50 submatrix.
                 """
-                return np.array([row[start_col : start_col + 50] for row in matrix[start_row : start_row + 50]])
+                return np.array([row[start_col : start_col + extra] for row in matrix[start_row : start_row + extra]])
 
             def exclude_first_row_and_column(matrix):
                 return np.array([row[1:] for row in matrix[1:]])
@@ -336,14 +340,14 @@ class Attention(nn.Module):
             # print(pattern.shape)
             # print(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150).shape)
             # print(exclude_first_row_and_column(pattern[0][i].detach().numpy()).shape)
-            if (self.layer_num, i) in ((4, 11), (5, 6), (3, 3), (2, 2)):
+            if (self.layer_num, i) in ((4, 11), (5, 6), (3, 3), (2, 2), (3, 2)):
                 plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()))
                 plt.colorbar()
                 plt.show()       
 
-                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150), vmin=0, vmax=1.0)
-                plt.colorbar()
-                plt.show()
+                # plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 490, 490, extra=10), vmin=0, vmax=1.0)
+                # plt.colorbar()
+                # plt.show()
 
                 plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=1.0)
                 plt.colorbar()
@@ -457,11 +461,16 @@ class TransformerBlock(nn.Module):
         self.layer_num = layer_num
 
     def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False, 
-                zero_out_specific_head=None, write_resid_keys_for_prompt=None):
+                zero_out_specific_head=None, write_resid_keys_for_prompt=None,
+                average_extended_pos_embed_in_blocks_at_layer=None):
         # resid_pre [batch, position, d_model]
         sess, dataset, prompt, keys = None, None, None, None
         if write_resid_keys_for_prompt is not None:
             sess, dataset, prompt, keys = write_resid_keys_for_prompt
+
+        average_sess, average_at_layer_keys, block_size = None, None, None
+        if average_extended_pos_embed_in_blocks_at_layer is not None:
+            average_sess, average_at_layer_keys, block_size = average_extended_pos_embed_in_blocks_at_layer
 
         if keys is not None and (key := f'blocks.{self.layer_num}.hook_resid_pre') in keys:
             model = sess.query(Model).filter(Model.name == model_name).first()
@@ -483,7 +492,31 @@ class TransformerBlock(nn.Module):
                     dataset=dataset,
                 )  
 
+        if average_at_layer_keys is not None and (average_at_layer_key := f'blocks.{self.layer_num}.hook_resid_pre') in average_at_layer_keys:
+            model = average_sess.query(Model).filter(Model.name == model_name).first()
+
+            extended_pos_embed_matrix = get_extended_pos_embed_matrix(average_sess, model, self.layer_num, average_at_layer_key)
+            extended_pos_embed_matrix_averaged = average_rows(extended_pos_embed_matrix, block_size)
+
+            resid_pre_numpy = resid_pre[0].detach().numpy()
+            resid_pre_numpy = resid_pre_numpy + extended_pos_embed_matrix_averaged[:resid_pre_numpy.shape[0]] - extended_pos_embed_matrix[:resid_pre_numpy.shape[0]]
+            resid_pre_numpy = resid_pre_numpy.reshape(1, resid_pre_numpy.shape[0], resid_pre_numpy.shape[1])
+
+            resid_pre = torch.from_numpy(resid_pre_numpy.astype(np.float32))
+
         normalized_resid_pre = self.ln1(resid_pre)
+
+        if average_at_layer_keys is not None and (average_at_layer_key := f'blocks.{self.layer_num}.ln1.hook_normalized') in average_at_layer_keys:
+            model = average_sess.query(Model).filter(Model.name == model_name).first()
+
+            extended_pos_embed_matrix = get_extended_pos_embed_matrix(average_sess, model, self.layer_num, average_at_layer_key)
+            extended_pos_embed_matrix_averaged = average_rows(extended_pos_embed_matrix, block_size)
+
+            normalized_resid_pre_numpy = normalized_resid_pre[0].detach().numpy()
+            normalized_resid_pre_numpy = normalized_resid_pre_numpy + extended_pos_embed_matrix_averaged[:normalized_resid_pre_numpy.shape[0]] - extended_pos_embed_matrix[:normalized_resid_pre_numpy.shape[0]]
+            normalized_resid_pre_numpy = normalized_resid_pre_numpy.reshape(1, normalized_resid_pre_numpy.shape[0], normalized_resid_pre_numpy.shape[1])
+
+            normalized_resid_pre = torch.from_numpy(normalized_resid_pre_numpy.astype(np.float32)) 
 
         if keys is not None and (key := f'blocks.{self.layer_num}.ln1.hook_normalized') in keys:
             model = sess.query(Model).filter(Model.name == model_name).first()
@@ -550,7 +583,8 @@ class DemoTransformer(nn.Module):
                 no_embed_contribution=False,
                 zero_out_specific_head=None, 
                 permute_pos_embed=False,
-                write_resid_keys_for_prompt=None):
+                write_resid_keys_for_prompt=None,
+                average_extended_pos_embed_in_blocks_at_layer=None):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -586,7 +620,8 @@ class DemoTransformer(nn.Module):
             residual = block(residual, zero_out_pos=zero_out_pos,
                              save_attn_patterns_filename=save_attn_patterns_filename,
                              zero_out_specific_head=zero_out_specific_head,
-                             write_resid_keys_for_prompt=write_resid_keys_for_prompt)
+                             write_resid_keys_for_prompt=write_resid_keys_for_prompt,
+                             average_extended_pos_embed_in_blocks_at_layer=average_extended_pos_embed_in_blocks_at_layer)
             # print(residual)
         normalized_resid_final = self.ln_final(residual)
         # print(normalized_resid_final)

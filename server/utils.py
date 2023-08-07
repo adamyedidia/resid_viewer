@@ -45,5 +45,9 @@ def has_unique_tokenization(l: list[int]) -> bool:
     return lists_are_equal(l, enc.encode(enc.decode(l)))
 
 
+def is_alphanumeric_spaces_or_punctuation(s: str) -> bool:
+    return all([c.isalnum() or c.isspace() or c in '.,?!' for c in s])
+
+
 def mean_subtract(mat: np.ndarray) -> np.ndarray:
     return mat - mat.mean(axis=0)

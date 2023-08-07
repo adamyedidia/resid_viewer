@@ -35,18 +35,21 @@ class ExtendedPosEmbed(Base):
     )
 
 
-def get_extended_pos_embed_matrix(sess, model: Model, layer: int) -> np.ndarray:
+def get_extended_pos_embed_matrix(sess, model: Model, layer: int, type: str) -> np.ndarray:
     hash = (
         sess.query(ExtendedPosEmbed.tokens_used_to_compute_hash)
-        .filter(and_(ExtendedPosEmbed.model_id == model.id, ExtendedPosEmbed.layer == layer))
+        .filter(and_(ExtendedPosEmbed.model_id == model.id, 
+                     ExtendedPosEmbed.layer == layer,
+                     ExtendedPosEmbed.type == type))
         .order_by(ExtendedPosEmbed.created_at.desc())
         .first()
-    )
+    )[0]
     
     extended_pos_embeds = (
         sess.query(ExtendedPosEmbed)
         .filter(and_(ExtendedPosEmbed.model_id == model.id, 
                      ExtendedPosEmbed.layer == layer,
+                     ExtendedPosEmbed.type == type,
                      ExtendedPosEmbed.tokens_used_to_compute_hash == hash))
         .order_by(ExtendedPosEmbed.token_position.asc())
         .all()

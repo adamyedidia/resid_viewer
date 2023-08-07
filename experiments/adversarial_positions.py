@@ -89,7 +89,7 @@ if __name__ == '__main__':
                           'Reply: "rathasoadga" '
                           'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
                           'Reply: "1pdjpm3efe4" '
-                          'Request: "Please repeat the following string exactly: "apple orange" '
+                          'Request: "Please repeat the following string exactly: "raltar the" '
                           'Reply: "')
         
         print(len(enc.encode(reference_text)))

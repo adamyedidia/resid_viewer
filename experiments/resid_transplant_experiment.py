@@ -95,48 +95,50 @@ def main():
     #                     'Reply: "rathasoadga" '
     #                     'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
     #                     'Reply: "1pdjpm3efe4" '
-    #                     'Request: "Please repeat the following string exactly: "Mary John" '
+    #                     'Request: "Please repeat the following string exactly: " theraltar hello" '
     #                     'Reply: "')
 
     # reference_text = 'Hello my name is'
 
-    modified_prompt1_text = (
-        """The decision Monday, the Roberts court’s first direct look at public campaign financing, concerned only systems that use matching funds, as opposed to lump-sum grants. About a third of the states have some form of public financing, as does the federal government for presidential elections.
+#     modified_prompt1_text = (
+#         """The decision Monday, the Roberts court’s first direct look at public campaign financing, concerned only systems that use matching funds, as opposed to lump-sum grants. About a third of the states have some form of public financing, as does the federal government for presidential elections.
 
-“We do not today call into question the wisdom of public financing as a means of funding political candidacy,” Chief Justice Roberts wrote. “That is not our business.”
+# “We do not today call into question the wisdom of public financing as a means of funding political candidacy,” Chief Justice Roberts wrote. “That is not our business.”
 
-Supporters of the law said the decision could have been worse. “Chief Justice Roberts at least recognized that public financing is a valid constitutional option,” said Monica Youn, a lawyer with the Brennan Center for Justice, which represented one of the defendants in the case.
+# Supporters of the law said the decision could have been worse. “Chief Justice Roberts at least recognized that public financing is a valid constitutional option,” said Monica Youn, a lawyer with the Brennan Center for Justice, which represented one of the defendants in the case.
 
-As a consequence of consequence the decision, states and municipalities are now blocked from using a method of public financing that is simultaneously likely to attract candidates fearful that they will be vastly outspent and sensitive to avoiding needless government expense.
+# As a consequence of consequence the decision, states and municipalities are now blocked from using a method of public financing that is simultaneously likely to attract candidates fearful that they will be vastly outspent and sensitive to avoiding needless government expense.
 
-“The government can still use taxpayer funds to subsidize political campaigns, but it can only do that in a manner that provides an alternative to private financing” said William R. Maurer, a lawyer with the Institute for Justice, which represented several challengers of the law. “It cannot create disincentives.”
+# “The government can still use taxpayer funds to subsidize political campaigns, but it can only do that in a manner that provides an alternative to private financing” said William R. Maurer, a lawyer with the Institute for Justice, which represented several challengers of the law. “It cannot create disincentives.”
 
-Chief Justice Roberts said that all escalating matching funds placed an unconstitutional burden on politicians who chose not to participate. But he added that Arizona’s system also created problematic asymmetries and anomalies. Candidates with several opponents could generate multiple subsidies every time they spent money, and spending from unaffiliated supporters could do the same.
+# Chief Justice Roberts said that all escalating matching funds placed an unconstitutional burden on politicians who chose not to participate. But he added that Arizona’s system also created problematic asymmetries and anomalies. Candidates with several opponents could generate multiple subsidies every time they spent money, and spending from unaffiliated supporters could do the same.
 
-Justice Antonin Scalia, Anthony M. Kennedy, Clarence Thomas and Samuel A. Alito Jr. joined the majority opinion.
+# Justice Antonin Scalia, Anthony M. Kennedy, Clarence Thomas and Samuel A. Alito Jr. joined the majority opinion.
 
-Advertisement Continue reading the main story
+# Advertisement Continue reading the main story
 
-Three years ago, in Davis v. Federal Election Commission, another 5-to-4 decision with the same justices in the majority, the court struck down a superficially similar federal law known as the “millionaire’s amendment.” That law allowed candidates to raise amounts over the usual contribution limits when rich opponents spent more than a given amount of their own money.
+# Three years ago, in Davis v. Federal Election Commission, another 5-to-4 decision with the same justices in the majority, the court struck down a superficially similar federal law known as the “millionaire’s amendment.” That law allowed candidates to raise amounts over the usual contribution limits when rich opponents spent more than a given amount of their own money.
 
-Justice Alito, writing for the majority, said the law imposed “an unprecedented penalty on any candidate who robustly exercises” free speech rights guaranteed by the First Amendment.
+# Justice Alito, writing for the majority, said the law imposed “an unprecedented penalty on any candidate who robustly exercises” free speech rights guaranteed by the First Amendment.
 
-Chief Justice Roberts said the logic of the Davis decision required the court to strike down the Arizona law. Indeed, he said, it is one thing for the government to allow candidates to seek additional contributions and another for the government to send a check.
+# Chief Justice Roberts said the logic of the Davis decision required the court to strike down the Arizona law. Indeed, he said, it is one thing for the government to allow candidates to seek additional contributions and another for the government to send a check.
 
-Newsletter Sign Up Continue reading the main story Please verify you're not a robot by clicking the box. Invalid email address. Please re-enter. You must select a newsletter to subscribe to. Sign Up You will receive emails containing news content , updates and promotions from The New York Times. You may opt-out at any time. You agree to receive occasional updates and special offers for The New York Times's products and services. Thank you for subscribing. An error has occurred. Please try again later. View all New York Times newsletters.
+# Newsletter Sign Up Continue reading the main story Please verify you're not a robot by clicking the box. Invalid email address. Please re-enter. You must select a newsletter to subscribe to. Sign Up You will receive emails containing news content , updates and promotions from The New York Times. You may opt-out at any time. You agree to receive occasional updates and special offers for The New York Times's products and services. Thank you for subscribing. An error has occurred. Please try again later. View all New York Times newsletters.
 
-“The cash subsidy, conferred in response to political speech, penalizes speech to a greater extent and more directly than the millionaire’s amendment in Davis,” Chief Justice Roberts wrote.
+# “The cash subsidy, conferred in response to political speech, penalizes speech to a greater extent and more directly than the millionaire’s amendment in Davis,” Chief Justice Roberts wrote.
 
-The decision concerned two consolidated cases, Arizona Free Enterprise Club v. Bennett, No. 10-238, and McComish v. Bennett, No. 10-239. It was the fifth ruling from the Roberts court cutting back on the government’s ability to regulate campaign finance
-"""
-    )
+# The decision concerned two consolidated cases, Arizona Free Enterprise Club v. Bennett, No. 10-238, and McComish v. Bennett, No. 10-239. It was the fifth ruling from the Roberts court cutting back on the government’s ability to regulate campaign finance
+# """
+#     )
 
     # reference_text = modified_prompt1_text
 
     # reference_text = ' a' * 500
     # reference_text = (' a b') * 200
 
-    reference_text = prompt1.text
+    # reference_text = prompt1.text
+
+    reference_text = 'asdjofnasdjfnoasdjfnaosdfnsaojdfnasodjfnaosdjnfaosjdfnoasndjfoasjdnfoasndfoasjdnfoasjnfowaenjwoenfoajnowjenfowjedfnoawjdnfojwajdnfojawodjfwoajfnowejnowejnfowjaenfojdnfoawjnowjneofjwnaodjfnsojdnfoajwenfoawjnfaosjdnfoajwenfoawejfdnasojfnaowjenaojewnfoasjdfoanjwefjaowjsfnodjanofajaenodjfaneowajenoajndofjkanfoajwen I gave the ball to Dr. Bob Bob what do you think about that? Who has the ball?'
 
     print(prompt1.text)
 
@@ -146,7 +148,7 @@ The decision concerned two consolidated cases, Arizona Free Enterprise Club v. B
     # reference_text = '\n\n a a' * 200
     # reference_text = ' 1 0 0' * 200
 
-    print([enc.decode([tok]) for tok in enc.encode(reference_text)][150:200])
+    print([(i, enc.decode([tok])) for i, tok in enumerate(enc.encode(reference_text))])
 
     tokens = reference_gpt2.to_tokens(reference_text)  # type: ignore
 
@@ -197,6 +199,7 @@ The decision concerned two consolidated cases, Arizona Free Enterprise Club v. B
                     # no_pos_embed_contribution = True,
                     # no_embed_contribution = True,
                     # permute_pos_embed=True,
+                    # average_extended_pos_embed_in_blocks_at_layer=(sess, ['blocks.2.hook_resid_pre', 'blocks.3.hook_resid_pre'], 20)
                     )
 
     last_logits = logits[-1, -1]  # type: ignore

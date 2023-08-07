@@ -119,17 +119,17 @@ def joint_pca_resids():
     )
 
 
-    resids2 = (
-        sess.query(Resid)
-        .filter(Resid.model == gpt2_small)
-        .filter(Resid.dataset == 'aaa')
-        .filter(Resid.type == type2)
-        .filter(Resid.layer == j)
-        .filter(Resid.head == None)
-        .filter(Resid.token_position > 0)
-        .order_by(Resid.token_position.asc())
-        .all()
-    )
+    # resids2 = (
+    #     sess.query(Resid)
+    #     .filter(Resid.model == gpt2_small)
+    #     .filter(Resid.dataset == 'aaa')
+    #     .filter(Resid.type == type2)
+    #     .filter(Resid.layer == j)
+    #     .filter(Resid.head == None)
+    #     .filter(Resid.token_position > 0)
+    #     .order_by(Resid.token_position.asc())
+    #     .all()
+    # )
 
     # prompt = sess.query(Prompt).get(776067)    
     # resids2 = (
@@ -144,17 +144,17 @@ def joint_pca_resids():
     #     .all()
     # )
 
-    # resids2 = (
-    #     sess.query(Resid)
-    #     .filter(Resid.model == gpt2_small)
-    #     .filter(Resid.dataset == 'aaa_average_in_blocks_10')
-    #     .filter(Resid.type == type1)
-    #     .filter(Resid.layer == i)
-    #     .filter(Resid.head == None)
-    #     .filter(Resid.token_position > 0)
-    #     .order_by(Resid.token_position.asc())
-    #     .all()
-    # )
+    resids2 = (
+        sess.query(Resid)
+        .filter(Resid.model == gpt2_small)
+        .filter(Resid.dataset == 'aaa_average_in_blocks_10')
+        .filter(Resid.type == type1)
+        .filter(Resid.layer == i)
+        .filter(Resid.head == None)
+        .filter(Resid.token_position > 0)
+        .order_by(Resid.token_position.asc())
+        .all()
+    )
 
     matrix1 = np.array([resid.resid for resid in resids1])
     matrix2 = np.array([resid.resid for resid in resids2])
