@@ -164,18 +164,18 @@ def joint_pca_resids():
     pca.fit(matrix1)
 
     # Apply the PCA transformation to matrix2
-    matrix2_pca = pca.transform(matrix2)
+    # matrix2_pca = pca.transform(matrix2)
 
-    # Create a scatter plot
+    # # Create a scatter plot
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(111, projection='3d')
 
-    # Get a color map
-    cmap = plt.get_cmap("viridis")
-    colors = cmap(np.linspace(0, 1, len(matrix2)))
+    # # Get a color map
+    # cmap = plt.get_cmap("viridis")
+    # colors = cmap(np.linspace(0, 1, len(matrix2)))
 
-    # Scatter plot
-    sc = ax.scatter(matrix2_pca[:, 0], matrix2_pca[:, 1], matrix2_pca[:, 2], c=colors)
+    # # Scatter plot
+    # sc = ax.scatter(matrix2_pca[:, 0], matrix2_pca[:, 1], matrix2_pca[:, 2], c=colors)
 
     # # Set labels
     # ax.set_xlabel('PCA 1')

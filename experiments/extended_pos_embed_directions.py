@@ -109,5 +109,67 @@ def main():
     print(biggest_pos_dot_product_index, biggest_pos_dot_product, enc.decode([biggest_pos_dot_product_index]))
     print(biggest_neg_dot_product_index, biggest_neg_dot_product, enc.decode([biggest_neg_dot_product_index]))
 
+def get_canonical_angles_between_extended_pos_embed_and_pos_embed():
+    sess = SessionLocal()
+
+    model = sess.query(Model).filter(Model.name == 'gpt2-small').first()
+
+    if model is None:
+        return
+
+    positional_embedding_matrix = reference_gpt2.W_pos.detach().numpy()
+
+    extended_positional_embedding_matrix = get_extended_pos_embed_matrix(sess, model, 2, 'blocks.2.ln1.hook_normalized')
+
+    A = positional_embedding_matrix
+    B = extended_positional_embedding_matrix
+
+    print(A.shape)
+    print(B.shape)
+
+    # Assume A and B are your matrices
+    U_A, s_A, Vh_A = np.linalg.svd(A, full_matrices=False)
+    U_B, s_B, Vh_B = np.linalg.svd(B, full_matrices=False)
+
+    # Let's consider the first k largest singular vectors
+    k = 3  # or any other number you choose
+    U_A_k = U_A[:, :k]
+    U_B_k = U_B[:, :k]
+
+    # Compute the matrix of cosines of canonical angles
+    C = U_A_k.T @ U_B_k
+
+    # Singular values of C give the cosine values of canonical angles
+    sigma = np.linalg.svd(C, compute_uv=False)
+
+    print(sigma)
+
+    # Get the actual canonical angles
+    theta = np.arccos(np.clip(sigma, -1, 1))
+
+    def cosine_similarity(vec1, vec2):
+        # Compute the dot product between vec1 and vec2
+        dot_product = np.dot(vec1, vec2)
+        
+        # Compute the L2 norm (Euclidean norm) of vec1 and vec2
+        norm_vec1 = np.linalg.norm(vec1)
+        norm_vec2 = np.linalg.norm(vec2)
+        
+        # Compute the cosine similarity
+        similarity = dot_product / (norm_vec1 * norm_vec2)
+    
+        return similarity
+    
+    print(cosine_similarity(U_A_k[:, 0], U_B_k[:, 0]))
+
+    # plt.plot(U_A_k[:, 0])
+    # plt.plot(U_B_k[:, 0])
+    # plt.show()
+
+    print(theta)
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    get_canonical_angles_between_extended_pos_embed_and_pos_embed()
+

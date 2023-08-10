@@ -3,9 +3,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 import sys
-from transformer_lens import HookedTransformer
-
 sys.path.append('..')
+from transformer_lens import HookedTransformer
+from server.database import SessionLocal
+
+from server.extended_pos_embed import get_extended_pos_embed_matrix
+from server.model import Model
+
 from experiments.experimental_transformer import average_rows
 
 
@@ -25,6 +29,13 @@ if __name__ == '__main__':
 # model_name = "stanford-crfm/darkmatter-gpt2-small-x343"
 # model_name = "stanford-crfm/expanse-gpt2-small-x777"
 
+    sess = SessionLocal()
+
+    model = sess.query(Model).filter(Model.name == "gpt2-small").first()
+
+    if not model:
+        raise Exception('No model found')
+
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
     model_name = "gpt2-small"
@@ -35,17 +46,24 @@ if __name__ == '__main__':
 
     matrix = reference_gpt2.W_pos.detach().numpy()
 
-    print(matrix.shape)
-
-    matrix2 = average_rows(reference_gpt2.W_pos.detach().numpy(), 10)
-
     # Calculate the mean vector and subtract it from the matrix
     mean_vector = np.mean(matrix, axis=0)
     matrix = matrix - mean_vector
 
-    pca = PCA(n_components=6)
+    # print(matrix.shape)
 
-    pca_result = pca.fit_transform(matrix)
+    # matrix2 = average_rows(reference_gpt2.W_pos.detach().numpy(), 10)
+    matrix2 = get_extended_pos_embed_matrix(sess, model, 2, 'blocks.2.ln1.hook_normalized')
+
+    # Concatenate matrix and matrix2
+    concat_matrix = np.concatenate((matrix, matrix2), axis=0)
+
+
+    pca = PCA(n_components=3)
+
+    pca_result_concat = pca.fit_transform(concat_matrix)
+    # pca_result = pca.fit_transform(matrix)
+    pca_result = pca.transform(matrix)
     pca_result2 = pca.transform(matrix2)
 
     # Separating the 3 PCA components
@@ -66,8 +84,8 @@ if __name__ == '__main__':
 
     for i in range(num_of_rows):
         # ax.scatter(x_pca[i], y_pca[i], z_pca[i], color=colors[i])
-        ax.scatter(x_pca[i], y_pca[i], z_pca[i], color='red')
-        ax.scatter(x_pca2[i], y_pca2[i], z_pca2[i], color='blue')
+        ax.scatter(x_pca[i], y_pca[i], z_pca[i], color='blue')
+        ax.scatter(x_pca2[i], y_pca2[i], z_pca2[i], color='red')
 
     ax.set_xlabel("PCA1")
     ax.set_ylabel("PCA2")

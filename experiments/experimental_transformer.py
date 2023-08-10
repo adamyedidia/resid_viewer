@@ -216,7 +216,7 @@ class Attention(nn.Module):
         self.register_buffer("IGNORE", torch.tensor(-1e5, dtype=torch.float32, device="cpu" if M1_MAC else "cuda"))
 
     def forward(self, normalized_resid_pre, zero_out_pos=None, save_attn_patterns_filename=None,
-                zero_out_specific_head=None):
+                zero_out_specific_head=None, zero_out_every=None):
         # normalized_resid_pre: [batch, position, d_model]
         if self.cfg.debug: print("Normalized_resid_pre:", normalized_resid_pre.shape)
 
@@ -231,9 +231,11 @@ class Attention(nn.Module):
 
         if zero_out_specific_head is not None:
             # print('zeroing', head_number, layer_number)
+            original_attn_scores = attn_scores.clone()
+            print(zero_out_every)
             attn_scores = self.apply_causal_mask_specific_head_ablated(attn_scores, 
                                                                        zero_out_specific_heads=zero_out_specific_head,
-                                                                       zero_out_pos=zero_out_pos)
+                                                                       zero_out_pos=zero_out_pos, zero_out_every=zero_out_every)
 
         else:
             # if self.layer_num in [2, 3]:
@@ -242,7 +244,24 @@ class Attention(nn.Module):
 
             original_attn_scores = attn_scores.clone()
 
-            attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos)
+            # if self.layer_num == 4:
+            # if self.layer_num < 5:
+            print(attn_scores.shape)
+
+            # for i in range(12):
+            #     if (self.layer_num, i) in [(4, 11), (5, 6), (6, 8), (7, 0), (8, 7), (9, 3)]:
+            # # if self.layer_num == 4:
+            #         first_val = attn_scores[0][i][499][494]
+            #         second_val = attn_scores[0][i][499][498]
+            #         attn_scores[0][i][499][494] = second_val
+            #         attn_scores[0][i][499][498] = 0
+
+            #         first_val = attn_scores[0][i][500][498]
+            #         second_val = attn_scores[0][i][500][499]
+            #         attn_scores[0][i][500][498] = second_val
+            #         attn_scores[0][i][500][499] = 0
+
+            attn_scores = self.apply_causal_mask(attn_scores, zero_out_pos=zero_out_pos, zero_out_every=zero_out_every)
         # print(zero_out_pos)
 
         # if zero_out_pos is not None:
@@ -340,14 +359,32 @@ class Attention(nn.Module):
             # print(pattern.shape)
             # print(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150).shape)
             # print(exclude_first_row_and_column(pattern[0][i].detach().numpy()).shape)
-            if (self.layer_num, i) in ((4, 11), (5, 6), (3, 3), (2, 2), (3, 2)):
-                plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()))
+            # if False:
+            if (self.layer_num, i) in ((4, 11),):#(1, 0), (5, 6), (3, 3), (2, 2), (3, 2), (2, 4), (3, 7)):
+                plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
                 plt.colorbar()
                 plt.show()       
 
-                # plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 490, 490, extra=10), vmin=0, vmax=1.0)
-                # plt.colorbar()
-                # plt.show()
+                plt.matshow(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
+                plt.colorbar()
+                plt.show()
+
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
+                plt.colorbar()
+                plt.show()
+
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
+                plt.colorbar()
+                plt.show()
+
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 455, 455, extra=50), vmin=0, vmax=1.0)
+                plt.colorbar()
+                plt.show()
+
+
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 455, 455, extra=50), vmin=0, vmax=1.0)
+                plt.colorbar()
+                plt.show()
 
                 plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=1.0)
                 plt.colorbar()
@@ -369,20 +406,31 @@ class Attention(nn.Module):
 
         return attn_out
 
-    def apply_causal_mask(self, attn_scores, zero_out_pos=None):
+    def apply_causal_mask(self, attn_scores, zero_out_pos=None, zero_out_every=None):
         # attn_scores: [batch, n_heads, query_pos, key_pos]
         mask = torch.triu(torch.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device),
                           diagonal=1).bool()
         
         if zero_out_pos is not None:
             mask[zero_out_pos][zero_out_pos-1] = 1
+
+        if zero_out_every is not None:
+            for i in range(zero_out_every, mask.shape[2], zero_out_every):
+                mask[i][i-1] = 1
+
         # import matplotlib.pyplot as plt
         # plt.matshow(mask.detach().numpy())
         # plt.show()        
+
+        # min_mask_4d_val = torch.min(attn_scores)        
         attn_scores.masked_fill_(mask, self.IGNORE)
+        # if self.layer_num == 4:
+        #     attn_scores.masked_fill_(mask, min_mask_4d_val)
+        # else:
+        #     attn_scores.masked_fill_(mask, self.IGNORE)
         return attn_scores
 
-    def apply_causal_mask_specific_head_ablated(self, attn_scores, zero_out_specific_heads, zero_out_pos=None):
+    def apply_causal_mask_specific_head_ablated(self, attn_scores, zero_out_specific_heads, zero_out_pos=None, zero_out_every=None):
         # attn_scores: [batch, n_heads, query_pos, key_pos]
         mask_2d = torch.triu(torch.ones(attn_scores.size(-2), attn_scores.size(-1), device=attn_scores.device), 
                              diagonal=1).bool()
@@ -406,10 +454,24 @@ class Attention(nn.Module):
                     if layer_num == self.layer_num:
                         mask_4d[0, head_num, zero_out_pos, zero_out_pos-1] = 1
 
+        if zero_out_every is not None:
+            for layer_num, head_num in zero_out_specific_heads:
+                if head_num is None and layer_num == self.layer_num:
+                    print(f'Zeroing out layer {self.layer_num}!')
+                    for i in range(zero_out_every, mask_4d.shape[2], zero_out_every):
+                        mask_4d[0, :, i, i-1] = 1
+                else:
+                    if layer_num == self.layer_num:
+                        for i in range(zero_out_every, mask_4d.shape[2], zero_out_every):
+                            print(f"zeroing {(layer_num, head_num, i, i-1)}")
+                            mask_4d[0, head_num, i, i-1] = 1
+
         # import matplotlib.pyplot as plt
         # for i in range(12):
         #     plt.matshow(mask_4d[0][i].detach().numpy())
         #     plt.show()
+
+        min_mask_4d_val = torch.min(attn_scores)
 
         attn_scores.masked_fill_(mask_4d, self.IGNORE)
         return attn_scores
@@ -462,7 +524,8 @@ class TransformerBlock(nn.Module):
 
     def forward(self, resid_pre, zero_out_pos=None, save_attn_patterns_filename=False, 
                 zero_out_specific_head=None, write_resid_keys_for_prompt=None,
-                average_extended_pos_embed_in_blocks_at_layer=None):
+                average_extended_pos_embed_in_blocks_at_layer=None,
+                zero_out_every=None):
         # resid_pre [batch, position, d_model]
         sess, dataset, prompt, keys = None, None, None, None
         if write_resid_keys_for_prompt is not None:
@@ -540,7 +603,9 @@ class TransformerBlock(nn.Module):
 
         attn_out = self.attn(normalized_resid_pre, zero_out_pos=zero_out_pos, 
                              save_attn_patterns_filename=save_attn_patterns_filename,
-                             zero_out_specific_head=zero_out_specific_head)
+                             zero_out_specific_head=zero_out_specific_head,
+                             zero_out_every=zero_out_every)
+        # resid_mid = resid_pre + attn_out * (2 if self.layer_num == 4 else 1)
         resid_mid = resid_pre + attn_out
 
         normalized_resid_mid = self.ln2(resid_mid)
@@ -584,7 +649,8 @@ class DemoTransformer(nn.Module):
                 zero_out_specific_head=None, 
                 permute_pos_embed=False,
                 write_resid_keys_for_prompt=None,
-                average_extended_pos_embed_in_blocks_at_layer=None):
+                average_extended_pos_embed_in_blocks_at_layer=None,
+                zero_out_every=None):
         # tokens [batch, position]
         embed = self.embed(tokens)
         # visualize_tensor(self.embed.W_E, 'we')
@@ -621,7 +687,8 @@ class DemoTransformer(nn.Module):
                              save_attn_patterns_filename=save_attn_patterns_filename,
                              zero_out_specific_head=zero_out_specific_head,
                              write_resid_keys_for_prompt=write_resid_keys_for_prompt,
-                             average_extended_pos_embed_in_blocks_at_layer=average_extended_pos_embed_in_blocks_at_layer)
+                             average_extended_pos_embed_in_blocks_at_layer=average_extended_pos_embed_in_blocks_at_layer,
+                             zero_out_every=zero_out_every)
             # print(residual)
         normalized_resid_final = self.ln_final(residual)
         # print(normalized_resid_final)

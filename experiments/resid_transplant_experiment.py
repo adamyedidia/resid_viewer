@@ -53,50 +53,50 @@ def main():
     # reference_text = ' 1 2 3 4 5 6 7 8 9 0' * 100
 
 
-    # reference_text = ('Request: Please repeat the following string exactly: "hello" '
-    #                     'Reply: "hello". '
-    #                     'Request: "Please repeat the following string exactly: "gorapopefm" '
-    #                     'Reply: "gorapopefm" '
-    #                     'Request: "Please repeat the following string exactly: "adfgpinaie" '
-    #                     'Reply: "adfgpinaie" '
-    #                     'Request: "Please repeat the following string exactly: " poaspdmfpm" '
-    #                     'Reply: " poaspdmfpm" '
-    #                     'Request: "Please repeat the following string exactly: "wplmedpmdp" '
-    #                     'Reply: "wplmedpmdp" '
-    #                     'Request: "Please repeat the following string exactly: "pvofampovm" '
-    #                     'Reply: "pvofampovm" '
-    #                     'Request: "Please repeat the following string exactly: "poemfvpoe" '
-    #                     'Reply: "poemfvpoe" '
-    #                     'Request: "Please repeat the following string exactly: "vfavn" '
-    #                     'Reply: "vfavn" '
-    #                     'Request: "Please repeat the following string exactly: "sopqmx" '
-    #                     'Reply: "sopqmx" '
-    #                     'Request: "Please repeat the following string exactly: "france" '
-    #                     'Reply: "france" '
-    #                     'Request: "Please repeat the following string exactly: "vilion" '
-    #                     'Reply: "pvofampovm" ' 
-    #                     'Request: "Please repeat the following string exactly: " jack" '
-    #                     'Reply: " jack" '
-    #                     'Request: "Please repeat the following string exactly: "aervaxv" '
-    #                     'Reply: "aervaxv" '
-    #                     'Request: "Please repeat the following string exactly: " poem" '
-    #                     'Reply: " poem" '
-    #                     'Request: "Please repeat the following string exactly: " Reddit" '
-    #                     'Reply: " Reddit" '
-    #                     'Request: "Please repeat the following string exactly: "irnnrf" '
-    #                     'Reply: "irnnrf" '
-    #                     'Request: "Please repeat the following string exactly: "wepoc" '
-    #                     'Reply: "wepoc" '
-    #                     'Request: "Please repeat the following string exactly: "propmfpm" '
-    #                     'Reply: "propmfpm" '
-    #                     'Request: "Please repeat the following string exactly: " Germany" '
-    #                     'Reply: " Germany""'
-    #                     'Request: "Please repeat the following string exactly: "rathasoadga" '
-    #                     'Reply: "rathasoadga" '
-    #                     'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
-    #                     'Reply: "1pdjpm3efe4" '
-    #                     'Request: "Please repeat the following string exactly: " theraltar hello" '
-    #                     'Reply: "')
+    reference_text = ('Request: Please repeat the following string exactly: "hello" '
+                        'Reply: "hello". '
+                        'Request: "Please repeat the following string exactly: "gorapopefm" '
+                        'Reply: "gorapopefm" '
+                        'Request: "Please repeat the following string exactly: "adfgpinaie" '
+                        'Reply: "adfgpinaie" '
+                        'Request: "Please repeat the following string exactly: " poaspdmfpm" '
+                        'Reply: " poaspdmfpm" '
+                        'Request: "Please repeat the following string exactly: "wplmedpmdp" '
+                        'Reply: "wplmedpmdp" '
+                        'Request: "Please repeat the following string exactly: "pvofampovm" '
+                        'Reply: "pvofampovm" '
+                        'Request: "Please repeat the following string exactly: "poemfvpoe" '
+                        'Reply: "poemfvpoe" '
+                        'Request: "Please repeat the following string exactly: "vfavn" '
+                        'Reply: "vfavn" '
+                        'Request: "Please repeat the following string exactly: "sopqmx" '
+                        'Reply: "sopqmx" '
+                        'Request: "Please repeat the following string exactly: "france" '
+                        'Reply: "france" '
+                        'Request: "Please repeat the following string exactly: "vilion" '
+                        'Reply: "pvofampovm" ' 
+                        'Request: "Please repeat the following string exactly: " jack" '
+                        'Reply: " jack" '
+                        'Request: "Please repeat the following string exactly: "aervaxv" '
+                        'Reply: "aervaxv" '
+                        'Request: "Please repeat the following string exactly: " poem" '
+                        'Reply: " poem" '
+                        'Request: "Please repeat the following string exactly: " Reddit" '
+                        'Reply: " Reddit" '
+                        'Request: "Please repeat the following string exactly: "irnnrf" '
+                        'Reply: "irnnrf" '
+                        'Request: "Please repeat the following string exactly: "wepoc" '
+                        'Reply: "wepoc" '
+                        'Request: "Please repeat the following string exactly: "propmfpm" '
+                        'Reply: "propmfpm" '
+                        'Request: "Please repeat the following string exactly: " Germany" '
+                        'Reply: " Germany""'
+                        'Request: "Please repeat the following string exactly: "rathasoadga" '
+                        'Reply: "rathasoadga" '
+                        'Request: "Please repeat the following string exactly: "1pdjpm3efe4" '
+                        'Reply: "1pdjpm3efe4" '
+                        'Request: "Please repeat the following string exactly: " ninja turtle pirate" '
+                        'Reply: " ninja')
 
     # reference_text = 'Hello my name is'
 
@@ -136,9 +136,9 @@ def main():
     # reference_text = ' a' * 500
     # reference_text = (' a b') * 200
 
-    # reference_text = prompt1.text
+    reference_text = prompt1.text
 
-    reference_text = 'asdjofnasdjfnoasdjfnaosdfnsaojdfnasodjfnaosdjnfaosjdfnoasndjfoasjdnfoasndfoasjdnfoasjnfowaenjwoenfoajnowjenfowjedfnoawjdnfojwajdnfojawodjfwoajfnowejnowejnfowjaenfojdnfoawjnowjneofjwnaodjfnsojdnfoajwenfoawjnfaosjdnfoajwenfoawejfdnasojfnaowjenaojewnfoasjdfoanjwefjaowjsfnodjanofajaenodjfaneowajenoajndofjkanfoajwen I gave the ball to Dr. Bob Bob what do you think about that? Who has the ball?'
+    # reference_text = 'asdjofnasdjfnoasdjfnaosdfnsaojdfnasodjfnaosdjnfaosjdfnoasndjfoasjdnfoasndfoasjdnfoasjnfowaenjwoenfoajnowjenfowjedfnoawjdnfojwajdnfojawodjfwoajfnowejnowejnfowjaenfojdnfoawjnowjneofjwnaodjfnsojdnfoajwenfoawjnfaosjdnfoajwenfoawejfdnasojfnaowjenaojewnfoasjdfoanjwefjaowjsfnodjanofajaenodjfaneowajenoajndofjkanfoajwen I gave the ball to Dr. Bob Bob what do you think about that? Who has the ball?'
 
     print(prompt1.text)
 
@@ -190,16 +190,17 @@ def main():
 
     logits = demo_gpt2(tokens, 
                     #    average_pos_embed_in_blocks=10, 
+                    # zero_out_every=5,
                     # zero_out_pos=500,
                     # zero_out_specific_head=heads_to_zero_out,
                     # zero_out_specific_head=[*[(2, h) for h in range(12)], *[(3, h) for h in range(12)]],
-                    # zero_out_specific_head=[*[(2, h) for h in range(12)], *[(1, h) for h in range(12)]],
+                    # zero_out_specific_head=[*[(2, h) for h in range(12)], *[(1, h) for h in range(12)], *[(0, h) for h in range(12)]],
                     # zero_out_specific_head=(None,4),
                     # save_attn_patterns_filename='long_repeat_prompt_no_embed',
                     # no_pos_embed_contribution = True,
                     # no_embed_contribution = True,
                     # permute_pos_embed=True,
-                    # average_extended_pos_embed_in_blocks_at_layer=(sess, ['blocks.2.hook_resid_pre', 'blocks.3.hook_resid_pre'], 20)
+                    average_extended_pos_embed_in_blocks_at_layer=(sess, ['blocks.4.hook_resid_pre'], 20)
                     )
 
     last_logits = logits[-1, -1]  # type: ignore
