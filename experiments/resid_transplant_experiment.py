@@ -189,7 +189,7 @@ def main():
     tokens = cuda(tokens)
 
     logits = demo_gpt2(tokens, 
-                    #    average_pos_embed_in_blocks=10, 
+                       average_pos_embed_in_blocks=10, 
                     # zero_out_every=5,
                     # zero_out_pos=500,
                     # zero_out_specific_head=heads_to_zero_out,
@@ -200,7 +200,7 @@ def main():
                     # no_pos_embed_contribution = True,
                     # no_embed_contribution = True,
                     # permute_pos_embed=True,
-                    average_extended_pos_embed_in_blocks_at_layer=(sess, ['blocks.4.hook_resid_pre'], 20)
+                    # average_extended_pos_embed_in_blocks_at_layer=(sess, ['blocks.4.hook_resid_pre'], 20)
                     )
 
     last_logits = logits[-1, -1]  # type: ignore

@@ -360,35 +360,37 @@ class Attention(nn.Module):
             # print(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150).shape)
             # print(exclude_first_row_and_column(pattern[0][i].detach().numpy()).shape)
             # if False:
-            if (self.layer_num, i) in ((4, 11),):#(1, 0), (5, 6), (3, 3), (2, 2), (3, 2), (2, 4), (3, 7)):
-                plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
-                plt.colorbar()
-                plt.show()       
+            # if (self.layer_num, i) in ((4, 11),):#(1, 0), (5, 6), (3, 3), (2, 2), (3, 2), (2, 4), (3, 7)):
+            if True:
+                # plt.matshow(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
+                # plt.colorbar()
+                # plt.show()       
 
-                plt.matshow(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
-                plt.colorbar()
-                plt.show()
+                # plt.matshow(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), vmin=-200, vmax=200)
+                # plt.colorbar()
+                # plt.show()
 
-                plt.matshow(extract_submatrix(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
-                plt.colorbar()
-                plt.show()
+                # plt.matshow(extract_submatrix(exclude_first_row_and_column(original_attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
+                # plt.colorbar()
+                # plt.show()
 
-                plt.matshow(extract_submatrix(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
-                plt.colorbar()
-                plt.show()
+                # plt.matshow(extract_submatrix(exclude_first_row_and_column(attn_scores[0][i].detach().numpy()), 455, 455, extra=50))#, vmin=-90, vmax=90)
+                # plt.colorbar()
+                # plt.show()
 
-                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 455, 455, extra=50), vmin=0, vmax=1.0)
-                plt.colorbar()
-                plt.show()
+                # plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 455, 455, extra=50), vmin=0, vmax=1.0)
+                # plt.colorbar()
+                # plt.show()
 
 
-                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 455, 455, extra=50), vmin=0, vmax=1.0)
+                plt.matshow(extract_submatrix(exclude_first_row_and_column(pattern[0][i].detach().numpy()), 150, 150, extra=50), vmin=0, vmax=1.0)
                 plt.colorbar()
-                plt.show()
+                plt.savefig(f'pngs/pattern_L{self.layer_num}H{i}_with_averaged_posembed.png')
+                # plt.show()
 
-                plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=1.0)
-                plt.colorbar()
-                plt.show()                
+                # plt.matshow(exclude_first_row_and_column(pattern[0][i].detach().numpy()), vmin=0, vmax=1.0)
+                # plt.colorbar()
+                # plt.show()                
 
             plot_and_find_largest_mean_diagonal(exclude_first_row_and_column(pattern[0][i].detach().numpy()))
 

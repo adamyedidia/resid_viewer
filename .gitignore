@@ -1,7 +1,7 @@
 local_settings.py
 *__pycache__*
 client/node_modules/
-*.png
+experiments/*.png
 .DS_Store
 experiments/pickle_files/*
 .idea/*
