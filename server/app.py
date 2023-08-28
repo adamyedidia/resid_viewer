@@ -17,6 +17,7 @@ from server.user import add_or_get_user, User
 from server.prompt import Prompt
 from server.direction_description import DirectionDescription
 from server.resid_writer import write_resids_for_prompt
+import traceback
 
 from settings import DATABASE_URL
 
@@ -27,16 +28,20 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 def sess_decorator(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        with SessionLocal() as sess:
-            kwargs['sess'] = sess
-            try:
-                response = f(*args, **kwargs)
-            except Exception as e:
-                sess.rollback()
-                raise e
-            finally:
-                sess.close()
-        return response
+        try:
+            with SessionLocal() as sess:
+                kwargs['sess'] = sess
+                try:
+                    response = f(*args, **kwargs)
+                except Exception as e:
+                    sess.rollback()
+                    raise e
+                finally:
+                    sess.close()
+            return response
+        except Exception as e:
+            print(traceback.print_exc())
+            return jsonify({"error": "Unexpected error"}), 500        
     return decorated_function
 
 
