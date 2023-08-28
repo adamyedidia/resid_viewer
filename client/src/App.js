@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {BrowserRouter as Router, Route, Routes,} from 'react-router-dom';
 import NavBar from './NavBar';
 import {
@@ -382,7 +382,7 @@ const MemoizedDialogContent = React.memo(({
   )
 })
 
-const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
+const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct}) => {
   const { dotProduct } = resid;
   const normalizedDotProduct = (dotProduct - minDotProduct) / (maxDotProduct - minDotProduct);
   const colorScale = chroma.scale(['red', 'white', 'blue']).mode('lch');
@@ -391,30 +391,30 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
 
   const predictedNextTokens = resid.predictedNextTokens;
 
-    const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
   const [isOverPopover, setIsOverPopover] = React.useState(false);
   const open = Boolean(anchorEl) && predictedNextTokens && Object.keys(predictedNextTokens).length > 0;
   const id = open ? 'simple-popover' : undefined;
 
   const handleMouseEnterBox = (event) => {
-    console.log('Mouse entered box'); // For debugging
+    console.log(`Mouse entered box: ${resid.decodedToken}`); // For debugging
     setAnchorEl(event.currentTarget);
   };
 
   const handleMouseLeaveBox = () => {
-    console.log('Mouse left box'); // For debugging
+    console.log(`Mouse left box: ${resid.decodedToken}`); // For debugging
     if (!isOverPopover) {
       setAnchorEl(null);
     }
   };
 
   const handleMouseEnterPopover = () => {
-    console.log('Mouse entered popover'); // For debugging
+    console.log(`Mouse entered popover: ${resid.decodedToken}`); // For debugging
     setIsOverPopover(true);
   };
 
   const handleMouseLeavePopover = () => {
-    console.log('Mouse left popover'); // For debugging
+    console.log(`Mouse left popover: ${resid.decodedToken}`); // For debugging
     setIsOverPopover(false);
     setAnchorEl(null);
   };
@@ -468,21 +468,38 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct }) => {
 
 
 
-const PromptRow = ({ promptId, resids, maxDotProduct, minDotProduct }) => (
-  <Box display="flex" flexWrap="wrap">
-    {resids.map((resid) => <ColoredResidBox key={resid.id} resid={resid} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />)}
-  </Box>
-);
+function PromptRow({ promptId, resids, maxDotProduct, minDotProduct }) {
+  const [currentHoveredResid, setCurrentHoveredResid] = React.useState(null);
+  
+  return (
+    <Box display="flex" flexWrap="wrap">
+      {resids.map((resid) => 
+        <ColoredResidBox 
+          key={resid.id} 
+          resid={resid} 
+          maxDotProduct={maxDotProduct} 
+          minDotProduct={minDotProduct} 
+          />)}
+    </Box>
+  );
+}
 
-const PromptTable = React.memo(({ groupedResids, maxDotProduct, minDotProduct }) => (
+function PromptTable({ groupedResids, maxDotProduct, minDotProduct }) {
+  return (
     <Grid container spacing={1}>
       {Object.entries(groupedResids).reverse().map(([promptId, resids]) => (
         <Grid item xs={12} key={promptId}>
-          <PromptRow promptId={promptId} resids={resids} maxDotProduct={maxDotProduct} minDotProduct={minDotProduct} />
+          <PromptRow 
+            promptId={promptId} 
+            resids={resids} 
+            maxDotProduct={maxDotProduct} 
+            minDotProduct={minDotProduct} 
+          />
         </Grid>
       ))}
     </Grid>
-  ));
+  );
+};
 
 const DirectionDescriptionField = ({direction, username}) => {
   const [description, setDescription] = useState(direction?.description || "");
@@ -640,6 +657,10 @@ const MainStreamViewerPage = () => {
   const [loadingResids, setLoadingResids] = useState(false);
   const [myDirections, setMyDirections] = useState([]);
 
+  const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
+
+  const firstRender = useRef(true);
+
   const typeShape = gpt2_types[selectedType];
 
   const needsHead = !!typeShape?.includes(12);
@@ -678,8 +699,6 @@ const MainStreamViewerPage = () => {
 
   useEffect(
     () => {
-      console.log('Triggering!')
-      console.log(localStorage.getItem('username'))
       setUsername(localStorage.getItem('username') || '');
     },
     []
@@ -804,17 +823,29 @@ const MainStreamViewerPage = () => {
   };
 
   useEffect(() => {
+    if (!hasFetchedOnce) return;
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
     fetchResidsAndDirection();
     // eslint-disable-next-line
   }, [selectedType, selectedHead]);
 
   useEffect(() => {
+    if (firstRender.current) {
+      firstRender.current = false;
+      return;
+    }
+
     if (!resids?.length) {
       fetchResidsAndDirection();
     }
     else {
       fetchDirection();
     }
+    setHasFetchedOnce(true);
     // eslint-disable-next-line
   }, [selectedComponentIndex]);
 
