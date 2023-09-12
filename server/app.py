@@ -96,7 +96,7 @@ def get_resids(sess):
         .filter(Resid.head == head)
         .filter(Resid.dataset == 'openwebtext-10k')
         .order_by(func.random())
-        .limit(20)
+        .limit(30)
         .all()
     )
 

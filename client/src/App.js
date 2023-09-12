@@ -170,6 +170,7 @@ const SlidersArray = ({ sliders, setSliders, directions }) => {
             value={sliderValue}
             onChange={(event, newValue) => handleChange(index, newValue)}
             aria-labelledby={`slider-${index}-label`}
+            disabled={sliderValue === 1 || sliderValue === -1}
           />
         </Box>
       ))}
@@ -975,6 +976,9 @@ const MainStreamViewerPage = () => {
         </Grid>
         {/*Second col*/}
         <Grid item container xs={4} direction={'column'} spacing={1}>
+        <Grid item>
+            {findNewDirection}
+          </Grid>
             <Grid item>
               <MyDirectionsWidget
                 direction={direction}
@@ -992,10 +996,6 @@ const MainStreamViewerPage = () => {
                        fullWidth
                        onChange={handleUsernameChange}
             />
-          </Grid>
-          <br/>
-          <Grid item>
-            {findNewDirection}
           </Grid>
           <Grid item>
             <DirectionDescriptionField direction={direction} username={debouncedUsername}/>
