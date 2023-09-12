@@ -27,6 +27,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash } from 'react-icons/fa';
 import Popover from '@mui/material/Popover';
+import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
+import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
 
 const NUM_SLIDERS = 30;
@@ -296,19 +298,67 @@ const DirectionInfo = ({ direction }) => {
           <Grid container direction="row" spacing={3}>
             {direction?.myDescription ? <Grid item xs={12}>
               <Typography variant="body1">
-                {`Your description: ${direction.myDescription}`}
+                {`Your description: ${direction.myDescription.description}`}
               </Typography>
+              <VoteWidget descriptionId={direction.myDescription.id} initialVotes={direction.myDescription.upvotes} />
             </Grid> : null}
             {direction?.bestDescription ? <Grid item xs={12}>
               <Typography variant="body1">
-                {`Highest-rated description: ${direction.bestDescription}`}
+                {`Highest-rated description: ${direction.bestDescription.description}`}
               </Typography>
+              <VoteWidget descriptionId={direction.bestDescription.id} initialVotes={direction.bestDescription.upvotes} />
             </Grid> : null}
           </Grid>
         </Grid>
       </Grid>
       <br/>
     </>
+    );
+  }
+
+  function VoteWidget({ descriptionId, initialVotes }) {
+    const [votes, setVotes] = useState(initialVotes);
+    const [userVote, setUserVote] = useState(null);
+  
+    useEffect(() => {
+      const storedVote = localStorage.getItem(`votes-${descriptionId}`);
+      if (storedVote) {
+        setUserVote(storedVote);
+      }
+    }, [descriptionId]);
+  
+    const handleVote = async (type) => {
+      try {
+        await axios.post(`api/descriptions/${descriptionId}/${type}`);
+        
+        // update the local state
+        if (type === 'upvote') {
+          setVotes(prevVotes => prevVotes + 1);
+          setUserVote('upvote');
+        } else if (type === 'downvote') {
+          setVotes(prevVotes => prevVotes - 1);
+          setUserVote('downvote');
+        }
+  
+        // store in local storage
+        localStorage.setItem(`votes-${descriptionId}`, type);
+      } catch (error) {
+        console.error("Error voting: ", error);
+      }
+    };
+  
+    return (
+      <div>
+        <ArrowUpwardIcon 
+          onClick={() => handleVote('upvote')} 
+          style={{color: userVote === 'upvote' ? 'green' : 'black', cursor: 'pointer'}}
+        />
+        <span>{votes}</span>
+        <ArrowDownwardIcon 
+          onClick={() => handleVote('downvote')} 
+          style={{color: userVote === 'downvote' ? 'red' : 'black', cursor: 'pointer'}}
+        />
+      </div>
     );
   }
 

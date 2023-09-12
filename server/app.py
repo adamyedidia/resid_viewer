@@ -248,8 +248,8 @@ def get_my_directions(sess):
         direction_jsons.append(
             {
                 **direction.to_json(), 
-                **({'myDescription': my_direction_description.description if my_direction_description is not None else None}),
-                **({'bestDescription': best_direction_description.description if best_direction_description is not None else None}),
+                **({'myDescription': my_direction_description.to_json() if my_direction_description is not None else None}),
+                **({'bestDescription': best_direction_description.to_json() if best_direction_description is not None else None}),
             }
         )
 
@@ -307,17 +307,19 @@ def create_direction(sess):
         name=direction_name,
     )
 
-    sess.add(DirectionDescription(
+    direction_description_obj = DirectionDescription(
         direction=direction_obj,
         user=user,
         description=direction_description,
-    ))
+    )
+
+    sess.add(direction_description_obj)
 
     sess.commit()
 
     return jsonify({
         **direction_obj.to_json(),
-        'myDescription': direction_description,
+        'myDescription': direction_description_obj.to_json(),
     })
 
 
@@ -355,8 +357,8 @@ def get_direction_descriptions(direction_id, sess):
 
     return jsonify({
         **direction.to_json(), 
-        **({'myDescription': my_direction_description.description} if my_direction_description else {}),
-        **({'bestDescription': best_direction_description.description} if best_direction_description else {}),
+        **({'myDescription': my_direction_description.to_json()} if my_direction_description else {}),
+        **({'bestDescription': best_direction_description.to_json()} if best_direction_description else {}),
     })
 
 
@@ -401,6 +403,25 @@ def upvote_direction(direction_description_id, sess):
         return jsonify(None)
 
     direction_description.upvotes += 1  # type: ignore
+
+    sess.commit()
+
+    return jsonify(direction_description.to_json())
+
+
+@app.route('/api/descriptions/<direction_description_id>/downvote', methods=['POST'])
+@sess_decorator
+def downvote_direction(direction_description_id, sess):
+    direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.id == direction_description_id)
+        .one_or_none()
+    )
+
+    if direction_description is None:
+        return jsonify(None)
+
+    direction_description.upvotes -= 1  # type: ignore
 
     sess.commit()
 
