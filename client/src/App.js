@@ -397,24 +397,20 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct}) => {
   const id = open ? 'simple-popover' : undefined;
 
   const handleMouseEnterBox = (event) => {
-    console.log(`Mouse entered box: ${resid.decodedToken}`); // For debugging
     setAnchorEl(event.currentTarget);
   };
 
   const handleMouseLeaveBox = () => {
-    console.log(`Mouse left box: ${resid.decodedToken}`); // For debugging
     if (!isOverPopover) {
       setAnchorEl(null);
     }
   };
 
   const handleMouseEnterPopover = () => {
-    console.log(`Mouse entered popover: ${resid.decodedToken}`); // For debugging
     setIsOverPopover(true);
   };
 
   const handleMouseLeavePopover = () => {
-    console.log(`Mouse left popover: ${resid.decodedToken}`); // For debugging
     setIsOverPopover(false);
     setAnchorEl(null);
   };
@@ -439,7 +435,7 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct}) => {
       >
         <Typography variant="body1"><pre style={{fontFamily: 'Times New Roman', margin: 0}}>{resid.decodedToken}</pre></Typography>
       </Box>
-      <Popover
+      {/* <Popover
         id={id}
         open={open}
         anchorEl={anchorEl}
@@ -461,7 +457,7 @@ const ColoredResidBox = ({ resid, minDotProduct, maxDotProduct}) => {
             <Typography key={token}>"{token}": {probability}</Typography>
           ))}
         </Box>
-      </Popover>
+      </Popover> */}
     </>
   );
 };
@@ -970,11 +966,11 @@ const MainStreamViewerPage = () => {
             <DirectionInfo direction={direction}/>
           </Grid>
           <Grid item>
-            <PromptTable
+            {!loadingResids && <PromptTable
                 groupedResids={groupedResids}
                 minDotProduct={minDotProduct}
                 maxDotProduct={maxDotProduct}
-            />
+            />}
           </Grid>
         </Grid>
         {/*Second col*/}
