@@ -27,8 +27,6 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash } from 'react-icons/fa';
 import Popover from '@mui/material/Popover';
-import ArrowUpwardIcon from '@material-ui/icons/ArrowUpward';
-import ArrowDownwardIcon from '@material-ui/icons/ArrowDownward';
 
 
 const NUM_SLIDERS = 30;
@@ -328,8 +326,9 @@ const DirectionInfo = ({ direction }) => {
     }, [descriptionId]);
   
     const handleVote = async (type) => {
+      if (userVote && userVote === type) return;
       try {
-        await axios.post(`api/descriptions/${descriptionId}/${type}`);
+        await callApi('POST', `http://127.0.0.1:5000/api/descriptions/${descriptionId}/${type}`);
         
         // update the local state
         if (type === 'upvote') {
@@ -349,15 +348,19 @@ const DirectionInfo = ({ direction }) => {
   
     return (
       <div>
-        <ArrowUpwardIcon 
+        <Typography
           onClick={() => handleVote('upvote')} 
           style={{color: userVote === 'upvote' ? 'green' : 'black', cursor: 'pointer'}}
-        />
+        >
+          ⬆️
+        </Typography>
         <span>{votes}</span>
-        <ArrowDownwardIcon 
+        <Typography 
           onClick={() => handleVote('downvote')} 
           style={{color: userVote === 'downvote' ? 'red' : 'black', cursor: 'pointer'}}
-        />
+        >
+          ⬇️
+        </Typography>
       </div>
     );
   }

@@ -34,5 +34,7 @@ class DirectionDescription(Base):
             'created_at': self.created_at,
             'user': self.user.name,
             'direction_id': self.direction.id,
+            'description': self.description,
+            'upvotes': self.upvotes,
         }
     
