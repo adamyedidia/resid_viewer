@@ -498,7 +498,7 @@ function PromptTable({ groupedResids, maxDotProduct, minDotProduct }) {
   );
 };
 
-const DirectionDescriptionField = ({direction, username}) => {
+const DirectionDescriptionField = ({direction, setDirection, username}) => {
   const [description, setDescription] = useState(direction?.description || "");
 
   const handleDescriptionChange = useCallback((event) => {
@@ -510,6 +510,9 @@ const DirectionDescriptionField = ({direction, username}) => {
       await callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
         direction_description: description,
         username: username,
+      }).then(() => {
+        setDescription('');
+        setDirection({...direction, myDescription: description});
       });
     } catch (error) {
       console.error(error);
@@ -998,7 +1001,7 @@ const MainStreamViewerPage = () => {
             />
           </Grid>
           <Grid item>
-            <DirectionDescriptionField direction={direction} username={debouncedUsername}/>
+            <DirectionDescriptionField direction={direction} setDirection={setDirection} username={debouncedUsername}/>
           </Grid>
           <Grid item>
             <AddYourOwnPromptField username={debouncedUsername} fetchResidsAndDirection={fetchResidsAndDirection} />

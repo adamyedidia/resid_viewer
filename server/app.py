@@ -227,7 +227,33 @@ def get_my_directions(sess):
         .all()
     )
 
-    return jsonify([direction.to_json() for direction in directions])
+    direction_jsons = []
+
+    for direction in directions:
+        my_direction_description = (
+            sess.query(DirectionDescription)
+            .filter(DirectionDescription.user == user)
+            .filter(DirectionDescription.direction == direction)
+            .order_by(DirectionDescription.created_at.desc())
+            .first()
+        )
+
+        best_direction_description = (
+            sess.query(DirectionDescription)
+            .filter(DirectionDescription.direction == direction)
+            .order_by(DirectionDescription.upvotes.desc())
+            .first()
+        )
+
+        direction_jsons.append(
+            {
+                **direction.to_json(), 
+                **({'myDescription': my_direction_description.description if my_direction_description is not None else None}),
+                **({'bestDescription': best_direction_description.description if best_direction_description is not None else None}),
+            }
+        )
+
+    return jsonify(direction_jsons)
 
 
 @app.route('/api/directions/<direction_id>', methods=['DELETE'])
