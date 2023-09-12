@@ -106,7 +106,7 @@ class Resid(Base):
     def __repr__(self):
         return f"<Resid {self.id}: {np.array(self.resid).shape}>"
     
-    def to_json(self):
+    def to_json(self, include_predicted_next_tokens: bool = False):
         return {
             'id': self.id,
             'resid': self.resid,
@@ -118,7 +118,7 @@ class Resid(Base):
             'decodedToken': self.decoded_token,
             'tokenPosition': self.token_position,
             'createdAt': self.created_at.timestamp(),
-            'predictedNextTokens': self.predicted_next_tokens,
+            **({'predictedNextTokens': self.predicted_next_tokens} if include_predicted_next_tokens else {}),
         }
     
 
