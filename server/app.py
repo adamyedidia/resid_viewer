@@ -169,8 +169,8 @@ def get_pca_direction(sess):
 
     return jsonify({
         **direction.to_json(), 
-        **({'myDescription': my_direction_description.description} if my_direction_description else {}),
-        **({'bestDescription': best_direction_description.description} if best_direction_description else {}),
+        **({'myDescription': my_direction_description.to_json()} if my_direction_description else {}),
+        **({'bestDescription': best_direction_description.to_json()} if best_direction_description else {}),
     })
 
 
@@ -317,9 +317,17 @@ def create_direction(sess):
 
     sess.commit()
 
+    best_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.direction == direction_obj)
+        .order_by(DirectionDescription.upvotes.desc())
+        .first()
+    )
+
     return jsonify({
         **direction_obj.to_json(),
-        'myDescription': direction_description_obj.to_json(),
+        **{'myDescription': direction_description_obj.to_json()},
+        **({'bestDescription': best_direction_description.to_json()} if best_direction_description else {}),
     })
 
 
@@ -379,15 +387,32 @@ def create_direction_description(direction_id, sess):
 
     user = add_or_get_user(sess, username)
 
-    sess.add(DirectionDescription(
+    direction_description_obj = DirectionDescription(
         direction=direction,
         user=user,
         description=direction_description,
-    ))
+    )
+
+    sess.add(direction_description_obj)
 
     sess.commit()
 
-    return jsonify(direction.to_json())
+    print(direction_description_obj)
+
+    best_direction_description = (
+        sess.query(DirectionDescription)
+        .filter(DirectionDescription.direction == direction)
+        .order_by(DirectionDescription.upvotes.desc())
+        .first()
+    )
+
+    print(direction.to_json())
+
+    return jsonify({
+        **direction.to_json(),
+        **({'myDescription': direction_description_obj.to_json()} if direction_description else {}),
+        **({'bestDescription': best_direction_description.to_json()} if best_direction_description else {}),
+    })
 
 
 @app.route('/api/descriptions/<direction_description_id>/upvote', methods=['POST'])

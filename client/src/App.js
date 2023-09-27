@@ -279,6 +279,8 @@ const DirectionInfo = ({ direction }) => {
   if (!direction?.id) return null;
   const directionName = direction?.name || `PCA component ${direction?.componentIndex}`;
   const percentVariance = direction?.fractionOfVarianceExplained ? Math.round(direction.fractionOfVarianceExplained * 10000) / 100 : null;
+  console.log(direction?.myDescription);
+  console.log(direction);
   return (
     <>
       <Grid container direction="column" spacing={2}>
@@ -326,38 +328,66 @@ const DirectionInfo = ({ direction }) => {
     }, [descriptionId]);
   
     const handleVote = async (type) => {
-      if (userVote && userVote === type) return;
       try {
+        if (userVote && userVote === type) return;
+        if (userVote && userVote !== type) {
+          setUserVote(null);
+          localStorage.removeItem(`votes-${descriptionId}`);  // Remove vote from local storage.
+        }
+    
         await callApi('POST', `http://127.0.0.1:5000/api/descriptions/${descriptionId}/${type}`);
-        
-        // update the local state
+    
         if (type === 'upvote') {
           setVotes(prevVotes => prevVotes + 1);
-          setUserVote('upvote');
         } else if (type === 'downvote') {
           setVotes(prevVotes => prevVotes - 1);
-          setUserVote('downvote');
         }
-  
-        // store in local storage
-        localStorage.setItem(`votes-${descriptionId}`, type);
+    
+        // Store in local storage.
+        if (!userVote) {
+          localStorage.setItem(`votes-${descriptionId}`, type);
+          setUserVote(type);
+        }
       } catch (error) {
         console.error("Error voting: ", error);
       }
     };
+    const widgetStyle = {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      border: '1px solid gray',
+      borderRadius: '5px',
+      padding: '10px',
+      width: '100px',
+      justifyContent: 'space-between'
+    };
+  
+    const voteStyle = (voteType) => ({
+      color: userVote === voteType ? (voteType === 'upvote' ? 'green' : 'red') : 'black',
+      cursor: 'pointer',
+      flex: 1,
+      textAlign: 'center'
+    });
+
+    const backgroundStyle = (voteType) => ({
+      backgroundColor: userVote === voteType ? (voteType === 'upvote' ? '#e6ffe6' : '#ffe6e6') : 'transparent',
+      borderRadius: '5px',
+      padding: '5px'
+    });
   
     return (
-      <div>
+      <div style={widgetStyle}>
         <Typography
-          onClick={() => handleVote('upvote')} 
-          style={{color: userVote === 'upvote' ? 'green' : 'black', cursor: 'pointer'}}
+          onClick={() => handleVote('upvote')}
+          style={{ ...voteStyle('upvote'), ...backgroundStyle('upvote') }}
         >
           ⬆️
         </Typography>
-        <span>{votes}</span>
+        <span style={{ flex: 1, textAlign: 'center' }}>{votes}</span>
         <Typography 
           onClick={() => handleVote('downvote')} 
-          style={{color: userVote === 'downvote' ? 'red' : 'black', cursor: 'pointer'}}
+          style={{ ...voteStyle('downvote'), ...backgroundStyle('downvote') }}
         >
           ⬇️
         </Typography>
@@ -563,9 +593,9 @@ const DirectionDescriptionField = ({direction, setDirection, username}) => {
       await callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
         direction_description: description,
         username: username,
-      }).then(() => {
+      }).then((direction) => {
         setDescription('');
-        setDirection({...direction, myDescription: description});
+        setDirection({...direction});
       });
     } catch (error) {
       console.error(error);
@@ -1035,15 +1065,6 @@ const MainStreamViewerPage = () => {
         <Grid item>
             {findNewDirection}
           </Grid>
-            <Grid item>
-              <MyDirectionsWidget
-                direction={direction}
-                setDirection={setDirection}
-                myDirections={myDirections}
-                setMyDirections={setMyDirections}
-                debouncedUsername={debouncedUsername}
-              />
-          </Grid>
           <Grid item>
             <TextField value={username}
                        label="Your username"
@@ -1058,6 +1079,15 @@ const MainStreamViewerPage = () => {
           </Grid>
           <Grid item>
             <AddYourOwnPromptField username={debouncedUsername} fetchResidsAndDirection={fetchResidsAndDirection} />
+          </Grid>          
+            <Grid item>
+              <MyDirectionsWidget
+                direction={direction}
+                setDirection={setDirection}
+                myDirections={myDirections}
+                setMyDirections={setMyDirections}
+                debouncedUsername={debouncedUsername}
+              />
           </Grid>
         </Grid>
       </Grid>
