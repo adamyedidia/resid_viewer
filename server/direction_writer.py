@@ -36,7 +36,7 @@ def main(experiment_name: Optional[str] = None):
                 sess.query(Prompt)
                 .filter(Prompt.added_by_user_id.is_(None))
                 .order_by(func.random())
-                .limit(100)
+                .limit(50)
                 .all()
             )
 
