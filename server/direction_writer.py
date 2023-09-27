@@ -15,6 +15,8 @@ from server.settings import NULL_DATASET_IS_OPENWEBTEXT
 import numpy as np
 import argparse
 from typing import Optional
+from server.prompt import Prompt
+from sqlalchemy import func
 
 
 def main(experiment_name: Optional[str] = None):
@@ -27,7 +29,22 @@ def main(experiment_name: Optional[str] = None):
     for key in ['blocks.0.hook_attn_out'] if experiment_name in ['catdog', 'catdog_dog_only'] else cache.keys():
         layer_num = get_layer_num_from_resid_type(key)
 
+        print(key)
+
         for head in [None, *range(cfg.n_heads)]:
+            prompts = (
+                sess.query(Prompt)
+                .filter(Prompt.model == model)
+                .filter(Prompt.layer == layer_num)
+                .filter(Prompt.type == key)
+                .filter(Prompt.head == head)
+                .order_by(func.random())
+                .limit(100)
+                .all()
+            )
+
+            prompt_ids = [prompt.id for prompt in prompts]
+
             resids = (
                 sess.query(Resid)
                 .filter(Resid.model == model)
@@ -37,9 +54,12 @@ def main(experiment_name: Optional[str] = None):
                 .filter(Resid.layer == layer_num)
                 .filter(Resid.type == key)
                 .filter(Resid.head == head)
+                .filter(Resid.prompt_id.in_(prompt_ids))
                 .filter(Resid.token_position > 0)  # The leading |<endoftext>| token is weird
                 .all()
             )
+
+            print('Got resids')
 
             if len(resids) == 0:
                 continue
