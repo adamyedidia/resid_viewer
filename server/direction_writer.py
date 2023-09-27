@@ -34,10 +34,7 @@ def main(experiment_name: Optional[str] = None):
         for head in [None, *range(cfg.n_heads)]:
             prompts = (
                 sess.query(Prompt)
-                .filter(Prompt.model == model)
-                .filter(Prompt.layer == layer_num)
-                .filter(Prompt.type == key)
-                .filter(Prompt.head == head)
+                .filter(Prompt.added_by_user_id.is_(None))
                 .order_by(func.random())
                 .limit(100)
                 .all()
