@@ -395,6 +395,7 @@ const DirectionInfo = ({ direction }) => {
     );
   }
 
+
 const MemoizedDialogContent = React.memo(({
   directionSliders, 
   setDirectionSliders, 
@@ -771,6 +772,21 @@ const MainStreamViewerPage = () => {
     setDirectionSliderDialogOpen(false);
   };
 
+  const generateJSONBlob = (data) => {
+    const jsonString = JSON.stringify(data, null, 2);
+    const blob = new Blob([jsonString], {type: "application/json"});
+    const url = URL.createObjectURL(blob);
+    return url;
+  };
+
+  const downloadDirectionAsJSON = () => {
+    const blobURL = generateJSONBlob(direction.direction);
+    const tempLink = document.createElement('a');
+    tempLink.href = blobURL;
+    tempLink.setAttribute('download', 'direction.json');
+    tempLink.click();
+  };
+
   useEffect(
     () => {
       if ((!debouncedUsername) || (debouncedUsername === 'undefined')) return;
@@ -973,13 +989,13 @@ const MainStreamViewerPage = () => {
 
   const findNewDirection = (
       <>
-            {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && <Grid container spacing={3} justify="center">
+            {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && 
           <Grid item xs={12} md={6}>
             <Button variant="outlined" onClick={handleOpenDirectionSliderDialog}>
               Find a new direction
             </Button>
           </Grid>
-        </Grid>}
+        }
         <Dialog
           open={directionSliderDialogOpen}
           onClose={handleCloseDirectionSliderDialog}
@@ -1062,8 +1078,13 @@ const MainStreamViewerPage = () => {
         </Grid>
         {/*Second col*/}
         <Grid item container xs={4} direction={'column'} spacing={1}>
-        <Grid item>
-            {findNewDirection}
+        <Grid item container direction="row" spacing={1}>
+              {findNewDirection}
+            <Grid item xs={12} md={6}>
+              <Button variant="outlined" color="primary" onClick={downloadDirectionAsJSON}>
+                Download Direction as JSON
+              </Button>
+            </Grid>
           </Grid>
           <Grid item>
             <TextField value={username}

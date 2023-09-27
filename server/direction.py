@@ -61,7 +61,7 @@ class Direction(Base):
             'fractionOfVarianceExplained': self.fraction_of_variance_explained,
             'name': self.name,
         }
-    
+
 
 def add_direction(sess,
                   direction: np.ndarray,
