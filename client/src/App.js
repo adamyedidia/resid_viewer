@@ -27,6 +27,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash } from 'react-icons/fa';
 import Popover from '@mui/material/Popover';
+import { URL } from './settings';
 
 
 const NUM_SLIDERS = 30;
@@ -225,7 +226,7 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
 const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirections, debouncedUsername }) => {  
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios.get("http://127.0.0.1:5000/api/my_directions", {params: {username: debouncedUsername}});
+      const result = await axios.get(`${URL}/api/my_directions`, {params: {username: debouncedUsername}});
       setMyDirections(result.data);
     };
     
@@ -233,7 +234,7 @@ const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirect
   }, [debouncedUsername]); // Empty dependency array means this effect runs once on mount
   
   const handleDelete = async (id) => {
-    await callApi('DELETE', `http://127.0.0.1:5000/api/directions/${id}`);
+    await callApi('DELETE', `${URL}/api/directions/${id}`);
     setMyDirections(myDirections.filter(direction => direction.id !== id));
   };
 
@@ -335,7 +336,7 @@ const DirectionInfo = ({ direction }) => {
           localStorage.removeItem(`votes-${descriptionId}`);  // Remove vote from local storage.
         }
     
-        await callApi('POST', `http://127.0.0.1:5000/api/descriptions/${descriptionId}/${type}`);
+        await callApi('POST', `${URL}/api/descriptions/${descriptionId}/${type}`);
     
         if (type === 'upvote') {
           setVotes(prevVotes => prevVotes + 1);
@@ -424,7 +425,7 @@ const MemoizedDialogContent = React.memo(({
   const handleSaveDirection = async () => {
     try {
       setSaving(true);
-      const response = await callApi("POST", "http://127.0.0.1:5000/api/directions", {
+      const response = await callApi("POST", `${URL}/api/directions`, {
         model_name: "gpt2-small",
         type: selectedType,
         head: selectedHead,
@@ -591,7 +592,7 @@ const DirectionDescriptionField = ({direction, setDirection, username}) => {
 
   const handleSaveDescription = async () => {
     try {
-      await callApi('POST', `http://127.0.0.1:5000/api/directions/${direction?.id}/descriptions`, {
+      await callApi('POST', `${URL}/api/directions/${direction?.id}/descriptions`, {
         direction_description: description,
         username: username,
       }).then((direction) => {
@@ -652,7 +653,7 @@ const AddYourOwnPromptField = ({username, fetchResidsAndDirection}) => {
 
   const handleSavePrompt = async () => {
     try {
-      await callApi('POST', `http://127.0.0.1:5000/api/prompts`, {
+      await callApi('POST', `${URL}/api/prompts`, {
         prompt,
         username,
         model_name: 'gpt2-small'
@@ -847,7 +848,7 @@ const MainStreamViewerPage = () => {
 
   const fetchAllDirections = async () => {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/api/all_directions", {
+      const response = await axios.get(`${URL}/api/all_directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -867,7 +868,7 @@ const MainStreamViewerPage = () => {
     if (!selectedType || [null, undefined, ""].includes(selectedComponentIndex)) return;
     try {
       setLoadingResids(true);
-      const residResponse = await axios.get("http://127.0.0.1:5000/api/resids", {
+      const residResponse = await axios.get(`${URL}/api/resids`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -879,7 +880,7 @@ const MainStreamViewerPage = () => {
       console.log('Got resid response:', residResponse)
       const newResids = residResponse.data;
 
-      const directionResponse = await axios.get("http://127.0.0.1:5000/api/directions", {
+      const directionResponse = await axios.get(`${URL}/api/directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -903,7 +904,7 @@ const MainStreamViewerPage = () => {
   const fetchDirection = async () => {
     console.log('Fetching direction!')    
     try {
-      const response = await axios.get("http://127.0.0.1:5000/api/directions", {
+      const response = await axios.get(`${URL}/api/directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
