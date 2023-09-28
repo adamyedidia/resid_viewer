@@ -19,7 +19,7 @@ from server.direction_description import DirectionDescription
 from server.resid_writer import write_resids_for_prompt
 import traceback
 
-from settings import DATABASE_URL
+from settings import DATABASE_URL, DEMO
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -518,4 +518,7 @@ def run_intervention(sess):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    if DEMO:
+        app.run(debug=True)
+    else:
+        app.run(host='0.0.0.0', port=5013)
