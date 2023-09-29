@@ -27,7 +27,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaTrash } from 'react-icons/fa';
 import Popover from '@mui/material/Popover';
-import { URL } from './settings';
+import { API_URL } from './settings';
+import Switch from '@mui/material/Switch';
 
 
 const NUM_SLIDERS = 30;
@@ -179,16 +180,33 @@ const SlidersArray = ({ sliders, setSliders, directions }) => {
   );
 };
 
-const TypeSelector = ({ types, selectedType, onTypeChange }) => {
-const niceTypeName = (badTypeName) => {
-  const nameDictionary = {
+const TypeSelector = ({ types, selectedType, onTypeChange, advancedMode }) => {
+  const niceTypeName = (badTypeName) => {
+    const nameDictionary = {
+      'hook_pos_embed': 'Positional Embedding',
+      'hook_embed': 'Token Embedding',
+    }
+    const newName = nameDictionary?.[badTypeName];
+    return newName ? newName : badTypeName;
+  };
+
+  const normalModeNameDictionary = {
     'hook_pos_embed': 'Positional Embedding',
     'hook_embed': 'Token Embedding',
+    'blocks.0.hook_resid_pre': 'Layer 0',
+    'blocks.1.hook_resid_pre': 'Layer 1',
+    'blocks.2.hook_resid_pre': 'Layer 2',
+    'blocks.3.hook_resid_pre': 'Layer 3',
+    'blocks.4.hook_resid_pre': 'Layer 4',
+    'blocks.5.hook_resid_pre': 'Layer 5',
+    'blocks.6.hook_resid_pre': 'Layer 6',
+    'blocks.7.hook_resid_pre': 'Layer 7',
+    'blocks.8.hook_resid_pre': 'Layer 8',
+    'blocks.9.hook_resid_pre': 'Layer 9',
+    'blocks.10.hook_resid_pre': 'Layer 10',
+    'blocks.11.hook_resid_pre': 'Layer 11',
+    'ln_final.hook_normalized': 'Output',
   }
-  const newName = nameDictionary?.[badTypeName];
-  return newName ? newName : badTypeName;
-};
-
 
   return (
       <Grid item xs={12} md={4}>
@@ -198,9 +216,11 @@ const niceTypeName = (badTypeName) => {
             value={selectedType}
             onChange={(event) => onTypeChange(event.target.value)}
           >
-            {types.map((type) => <MenuItem value={type} key={type}>
+            {advancedMode ? types.map((type) => <MenuItem value={type} key={type}>
             <Typography style={{ color: 'white' }}>{niceTypeName(type)}</Typography>
-            </MenuItem>)}
+            </MenuItem>) : types.map((type) => normalModeNameDictionary[type] ? <MenuItem value={type} key={type}>
+                <Typography style={{ color: 'white' }}>{normalModeNameDictionary[type]}</Typography>
+              </MenuItem> : null)}
           </Select>
         </FormControl>
       </Grid>
@@ -226,7 +246,7 @@ const IndexSelector = ({ range, selectedIndex, onIndexChange, label }) => (
 const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirections, debouncedUsername }) => {  
   useEffect(() => {
     const fetchData = async () => {
-      const result = await axios.get(`${URL}/api/my_directions`, {params: {username: debouncedUsername}});
+      const result = await axios.get(`${API_URL}/api/my_directions`, {params: {username: debouncedUsername}});
       setMyDirections(result.data);
     };
     
@@ -234,7 +254,7 @@ const MyDirectionsWidget = ({ direction, setDirection, myDirections, setMyDirect
   }, [debouncedUsername]); // Empty dependency array means this effect runs once on mount
   
   const handleDelete = async (id) => {
-    await callApi('DELETE', `${URL}/api/directions/${id}`);
+    await callApi('DELETE', `${API_URL}/api/directions/${id}`);
     setMyDirections(myDirections.filter(direction => direction.id !== id));
   };
 
@@ -336,7 +356,7 @@ const DirectionInfo = ({ direction }) => {
           localStorage.removeItem(`votes-${descriptionId}`);  // Remove vote from local storage.
         }
     
-        await callApi('POST', `${URL}/api/descriptions/${descriptionId}/${type}`);
+        await callApi('POST', `${API_URL}/api/descriptions/${descriptionId}/${type}`);
     
         if (type === 'upvote') {
           setVotes(prevVotes => prevVotes + 1);
@@ -425,7 +445,7 @@ const MemoizedDialogContent = React.memo(({
   const handleSaveDirection = async () => {
     try {
       setSaving(true);
-      const response = await callApi("POST", `${URL}/api/directions`, {
+      const response = await callApi("POST", `${API_URL}/api/directions`, {
         model_name: "gpt2-small",
         type: selectedType,
         head: selectedHead,
@@ -592,7 +612,7 @@ const DirectionDescriptionField = ({direction, setDirection, username}) => {
 
   const handleSaveDescription = async () => {
     try {
-      await callApi('POST', `${URL}/api/directions/${direction?.id}/descriptions`, {
+      await callApi('POST', `${API_URL}/api/directions/${direction?.id}/descriptions`, {
         direction_description: description,
         username: username,
       }).then((direction) => {
@@ -653,7 +673,7 @@ const AddYourOwnPromptField = ({username, fetchResidsAndDirection}) => {
 
   const handleSavePrompt = async () => {
     try {
-      await callApi('POST', `${URL}/api/prompts`, {
+      await callApi('POST', `${API_URL}/api/prompts`, {
         prompt,
         username,
         model_name: 'gpt2-small'
@@ -744,6 +764,8 @@ const MainStreamViewerPage = () => {
 
   const [hasFetchedOnce, setHasFetchedOnce] = useState(false);
 
+  const [advancedMode, setAdvancedMode] = useState(false);
+
   const firstRender = useRef(true);
 
   const typeShape = gpt2_types[selectedType];
@@ -774,6 +796,7 @@ const MainStreamViewerPage = () => {
   };
 
   const generateJSONBlob = (data) => {
+    console.log(data);
     const jsonString = JSON.stringify(data, null, 2);
     const blob = new Blob([jsonString], {type: "application/json"});
     const url = URL.createObjectURL(blob);
@@ -848,7 +871,7 @@ const MainStreamViewerPage = () => {
 
   const fetchAllDirections = async () => {
     try {
-      const response = await axios.get(`${URL}/api/all_directions`, {
+      const response = await axios.get(`${API_URL}/api/all_directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -868,7 +891,7 @@ const MainStreamViewerPage = () => {
     if (!selectedType || [null, undefined, ""].includes(selectedComponentIndex)) return;
     try {
       setLoadingResids(true);
-      const residResponse = await axios.get(`${URL}/api/resids`, {
+      const residResponse = await axios.get(`${API_URL}/api/resids`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -880,7 +903,7 @@ const MainStreamViewerPage = () => {
       console.log('Got resid response:', residResponse)
       const newResids = residResponse.data;
 
-      const directionResponse = await axios.get(`${URL}/api/directions`, {
+      const directionResponse = await axios.get(`${API_URL}/api/directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -904,7 +927,7 @@ const MainStreamViewerPage = () => {
   const fetchDirection = async () => {
     console.log('Fetching direction!')    
     try {
-      const response = await axios.get(`${URL}/api/directions`, {
+      const response = await axios.get(`${API_URL}/api/directions`, {
         params: {
           model_name: "gpt2-small",
           type: selectedType,
@@ -988,6 +1011,10 @@ const MainStreamViewerPage = () => {
     null
   )
 
+  const toggleAdvancedMode = () => {
+    setAdvancedMode(!advancedMode);
+  }
+
   const findNewDirection = (
       <>
             {selectedType && (!needsHead || (selectedHead === 0) || selectedHead) && !!resids?.length && 
@@ -1025,9 +1052,10 @@ const MainStreamViewerPage = () => {
         </Dialog>
   </>);
 
-  const selectTypeHeadComp = (
+  const selectTypeHeadComp = (advancedMode) => (
       <>
         <TypeSelector
+            advancedMode={advancedMode}
             types={types}
             selectedType={selectedType}
             onTypeChange={(type) => setSelectedType(type)}
@@ -1059,7 +1087,13 @@ const MainStreamViewerPage = () => {
         <Grid container spacing={1} justify="center" direction={'row'}>
         {/*First Col*/}
         <Grid item container xs={8} direction={'column'}>
-          <Grid item>{selectTypeHeadComp}</Grid>
+          <Grid item>
+            <div>
+              <span>{advancedMode ? "Advanced Mode" : "Normal Mode" }</span>
+              <Switch checked={advancedMode} onChange={toggleAdvancedMode} />
+            </div>
+          </Grid>
+          <Grid item>{selectTypeHeadComp(advancedMode)}</Grid>
           <Grid item>
             {loadingResids && <>
               <LoadingIndicator />
