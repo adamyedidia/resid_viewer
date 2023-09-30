@@ -859,7 +859,7 @@ const UsageGuidePage = () => {
 
 const MainStreamViewerPage = () => {
   const [directionSliderDialogOpen, setDirectionSliderDialogOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState("hook_pos_embed");
+  const [selectedType, setSelectedType] = useState("blocks.0.hook_resid_pre");
   const [selectedHead, setSelectedHead] = useState("");
   const [selectedComponentIndex, setSelectedComponentIndex] = useState("0");
   const [resids, setResids] = useState([]);
