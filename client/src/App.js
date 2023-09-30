@@ -1066,6 +1066,10 @@ const MainStreamViewerPage = () => {
   }, [selectedType, selectedHead]);
 
   useEffect(() => {
+    fetchResidsAndDirection();
+  }, [])
+
+  useEffect(() => {
     if (firstRender.current) {
       firstRender.current = false;
       return;
