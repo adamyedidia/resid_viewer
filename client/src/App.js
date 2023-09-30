@@ -1055,6 +1055,8 @@ const MainStreamViewerPage = () => {
   };
 
   useEffect(() => {
+    console.log(firstRender)
+    console.log(hasFetchedOnce)
     if (!hasFetchedOnce) return;
     if (firstRender.current) {
       firstRender.current = false;
@@ -1067,6 +1069,7 @@ const MainStreamViewerPage = () => {
 
   useEffect(() => {
     fetchResidsAndDirection();
+    setHasFetchedOnce(true);
   }, [])
 
   useEffect(() => {
