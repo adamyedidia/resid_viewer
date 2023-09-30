@@ -100,6 +100,8 @@ def get_resids(sess):
         .all()
     )
 
+    print('got prompt ids')
+
     resid_prompt_ids = {*{t[0] for t in resid_prompt_ids}, *{t[0] for t in my_resid_prompt_ids}}
 
     resids = (
@@ -112,6 +114,8 @@ def get_resids(sess):
         .filter(Resid.token_position > 0)  # The leading |<endoftext>| token is weird
         .all()
     )
+
+    print('got resids')
 
     return jsonify([resid.to_json() for resid in resids])
 
