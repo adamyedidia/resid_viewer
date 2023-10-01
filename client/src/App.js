@@ -794,7 +794,8 @@ const UsageGuidePage = () => {
             </Typography>
             <Typography paragraph>
               A more detailed explanation of how transformers networks work and what the residual stream is can be found
-              {' '}<Link external to="https://transformer-circuits.pub/2021/framework/index.html">here</Link>. If you want to really 
+              {' '}<Link external to="https://transformer-circuits.pub/2021/framework/index.html">here</Link>. If you want to actually understand what the residual stream is and how transformers work, 
+              {' '}the text that follows here is hopelessly insufficient, and you should really follow the earlier link. 
               {' '}However, as 
               {' '}a <emph>very</emph> brief summary of what the "residual stream" is: 
             </Typography> 
