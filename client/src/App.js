@@ -816,7 +816,7 @@ const UsageGuidePage = () => {
               It's not easy to directly interpret a 768-dimensional vector, let alone one at each layer and at each token in the prompt.
               {' '}It's the purpose of this tool to make the job of interpreting such vectors easier. One way of interpreting the residual
               {' '}stream is by considering different possible <emph>directions</emph> in the residual stream. By analogy, imagine if there was
-              {' '}a arrow in front of you, oriented somehow in space. The arrow represents the residual stream, by analogy. One way you might approach
+              {' '}a arrow in front of you, oriented somehow in space. The arrow represents the residual stream. One way you might approach
               {' '}describing the arrow's direction is by considering how "northerly" the arrow's direction is; that is, to what degree the arrow is pointing
               {' '}North. If the arrow was pointing northward, we might say that the arrow had positive northerliness, and if the arrow was pointing
               {' '}southward, we might say that the arrow had negative northerliness. An arrow pointing northeast could still be said to have positive northerliness;
