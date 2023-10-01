@@ -785,6 +785,9 @@ const UsageGuidePage = () => {
         <Card style={darkTheme}>
           <CardContent>
             <Typography paragraph>
+              A YouTube tutorial of the Residual Stream viewer is available <Link external to="https://www.youtube.com/watch?v=9d2fs7kt1I0&ab_channel=AdamYedidia">here</Link>.
+            </Typography>
+            <Typography paragraph>
               The residual stream viewer is a tool for finding interesting directions in the residual stream of GPT2-small,
               {' '}for writing explanations for those directions and reading the explanations left by others,
               {' '}and for constructing new directions out of linear combinations of old ones.
