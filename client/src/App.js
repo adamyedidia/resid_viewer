@@ -889,7 +889,7 @@ const MainStreamViewerPage = () => {
   console.log('Direction:', direction);
 
   // Store the user's username in local storage
-  const [username, setUsername] = useState(localStorage.getItem('username') || '');
+  const [username, setUsername] = useState(localStorage.getItem('username') || 'Anonymous');
   const debouncedUsername = useDebounce(username, 500);
 
   const handleUsernameChange = (event) => {
