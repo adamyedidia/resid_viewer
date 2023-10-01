@@ -102,7 +102,6 @@ def get_resids(sess):
 
     resid_prompt_ids = (
         sess.query(Prompt.id)
-        .filter(Prompt.model == model)
         .filter(Prompt.dataset == 'openwebtext-10k')
         .filter(Prompt.added_by_user_id.is_(None))
         .order_by(func.random())
