@@ -88,13 +88,23 @@ def get_resids(sess):
     else:
         my_resid_prompt_ids = set()
 
+    # resid_prompt_ids = (
+    #     sess.query(Resid.prompt_id)
+    #     .filter(Resid.model == model)
+    #     .filter(Resid.layer == layer)
+    #     .filter(Resid.type == type)
+    #     .filter(Resid.head == head)
+    #     .filter(Resid.dataset == 'openwebtext-10k')
+    #     .order_by(func.random())
+    #     .limit(20)
+    #     .all()
+    # )
+
     resid_prompt_ids = (
-        sess.query(Resid.prompt_id)
-        .filter(Resid.model == model)
-        .filter(Resid.layer == layer)
-        .filter(Resid.type == type)
-        .filter(Resid.head == head)
-        .filter(Resid.dataset == 'openwebtext-10k')
+        sess.query(Prompt.id)
+        .filter(Prompt.model == model)
+        .filter(Prompt.dataset == 'openwebtext-10k')
+        .filter(Prompt.added_by_user_id.is_(None))
         .order_by(func.random())
         .limit(20)
         .all()
