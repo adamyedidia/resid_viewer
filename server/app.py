@@ -506,6 +506,8 @@ def add_prompt(sess):
     sess.add(prompt_obj)
     sess.commit()
 
+    print("done committing prompt")
+
     write_resids_for_prompt(sess, prompt_obj, model)
 
     return jsonify({'success': True})
