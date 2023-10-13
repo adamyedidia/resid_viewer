@@ -489,6 +489,85 @@ const MemoizedDialogContent = React.memo(({
   )
 })
 
+function UploadDirectionDialogButton({ selectedType, selectedHead, username, setDirection, myDirections, setMyDirections }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <Button variant="outlined" onClick={() => setOpen(true)}>Upload Direction</Button>
+      <UploadDirectionDialog
+        open={open}
+        setOpen={setOpen}
+        selectedType={selectedType}
+        selectedHead={selectedHead}
+        username={username}
+        setDirection={setDirection}
+        myDirections={myDirections}
+        setMyDirections={setMyDirections}
+      />
+    </>
+  );
+}
+
+
+function UploadDirectionDialog({ open, setOpen, selectedType, selectedHead, username, setDirection, myDirections, setMyDirections }) {
+
+  const [directionName, setDirectionName] = useState('');
+  const [directionDescription, setDirectionDescription] = useState('');
+
+  const handleSaveDirection = async (newDirection) => {
+    const directionToSave = newDirection;
+    try {
+      const response = await callApi("POST", `${API_URL}/api/directions`, {
+        model_name: "gpt2-small",
+        type: selectedType,
+        head: selectedHead,
+        direction: directionToSave,
+        username: username,
+        direction_name: directionName,
+        direction_description: directionDescription,
+      })
+      setDirection(response);
+      setMyDirections([...myDirections, response]);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  if (!open) return null;
+
+  return (
+    <Dialog
+      open={open}
+      onClose={() => setOpen(false)}
+      PaperComponent={DraggablePaper}
+      aria-labelledby="draggable-dialog-title"
+      fullWidth
+    >
+      <DraggableDialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+        Upload Direction
+      </DraggableDialogTitle>
+      <DialogContent>
+        <Grid container spacing={3} justify="center">
+          <Grid item>
+            {/* Give your direction a name */}
+            <TextField label="Direction name" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth value={directionName} onChange={e => setDirectionName(e.target.value)}/>
+          </Grid>
+          <Grid item>
+            {/* Give your direction a description */}
+            <TextField label="Direction description" variant="filled" style={{backgroundColor: '#3a3a3a'}} fullWidth multiline value={directionDescription} onChange={e => setDirectionDescription(e.target.value)}/>
+          </Grid>
+          <Grid item>
+            {/* Save your direction */}
+            <UploadDirectionButton onUpload={(direction) => handleSaveDirection(direction)} />
+          </Grid>
+        </Grid>
+      </DialogContent> 
+    </Dialog>
+  );
+  }
+
+
 function UploadDirectionButton({ onUpload }) {
   const fileInputRef = useRef(null);
 
@@ -498,8 +577,8 @@ function UploadDirectionButton({ onUpload }) {
       const reader = new FileReader();
       reader.onload = (e) => {
         try {
-          const parsedData = JSON.parse(e.target.result);
-          if (Array.isArray(parsedData.direction) && parsedData.direction.length === 768) { // Adjust 768 if needed
+          const parsedData = JSON.parse(e.target.result);          
+          if (Array.isArray(parsedData) && parsedData.length === 768) { // Adjust 768 if needed
             onUpload(parsedData);
           } else {
             alert('Invalid direction format.');
@@ -1242,6 +1321,16 @@ const MainStreamViewerPage = () => {
               <Button variant="outlined" color="primary" onClick={downloadDirectionAsJSON}>
                 Download Direction
               </Button>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <UploadDirectionDialogButton 
+                selectedType={selectedType}
+                selectedHead={selectedHead}
+                username={debouncedUsername}
+                setDirection={setDirection}
+                myDirections={myDirections}
+                setMyDirections={setMyDirections}
+              />
             </Grid>
           </Grid>
           <Grid item>
