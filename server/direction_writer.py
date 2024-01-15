@@ -56,7 +56,7 @@ def main(experiment_name: Optional[str] = None):
                 .all()
             )
 
-            print('Got resids')
+            print(f'Got {len(resids)} resids')
 
             if len(resids) == 0:
                 continue
