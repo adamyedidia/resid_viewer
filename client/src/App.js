@@ -1107,7 +1107,7 @@ const MainStreamViewerPage = () => {
       const newDirection = directionResponse.data;
       calculateDotProducts(newResids, newDirection);
       setLoadingResids(false);
-      // setResids(newResids);
+      setResids(newResids);
       setDirection(newDirection);
     } catch (error) {
       console.error(error);
